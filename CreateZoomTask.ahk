@@ -3,24 +3,17 @@
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
-1E := 
-2E :=
-3E :=
-4E :=
-5E :=
-6E :=
-7E :=
-1T :=
-2T :=
-3T :=
-4T :=
-5T :=
-6T :=
-7T :=
+;Zoom.exe path:
+zoompath := "%APPDATA%\Zoom\bin\Zoom.exe"
 
-template := "<?xml version=" . """" . "1.0" . """" . " encoding=" . """" . "UTF-16" . """" . "?>`n<Task version=" . """" . "1.4" . """" . " xmlns=" . """" . "http://schemas.microsoft.com/windows/2004/02/mit/task" . """" . ">`n  <RegistrationInfo>`n    <Date>[NOW]</Date>`n    <Author>CREATEZOOMTASK</Author>`n    <URI>\[MEETINGNAME]</URI>`n  </RegistrationInfo>`n  <Triggers>    [TRIGGERS]`n  </Triggers>`n  <Principals>`n    <Principal id=" . """" . "Author" . """" . ">`n      <UserId>S-1-5-21-391003967-3623282886-662930924-1001</UserId>`n      <LogonType>InteractiveToken</LogonType>`n      <RunLevel>LeastPrivilege</RunLevel>`n    </Principal>`n  </Principals>`n  <Settings>`n    <MultipleInstancesPolicy>StopExisting</MultipleInstancesPolicy>`n    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>`n    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>`n    <AllowHardTerminate>true</AllowHardTerminate>`n    <StartWhenAvailable>false</StartWhenAvailable>`n    <RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>`n    <IdleSettings>`n      <StopOnIdleEnd>true</StopOnIdleEnd>`n      <RestartOnIdle>false</RestartOnIdle>`n    </IdleSettings>`n    <AllowStartOnDemand>true</AllowStartOnDemand>`n    <Enabled>true</Enabled>`n    <Hidden>false</Hidden>`n    <RunOnlyIfIdle>false</RunOnlyIfIdle>`n    <DisallowStartOnRemoteAppSession>false</DisallowStartOnRemoteAppSession>`n    <UseUnifiedSchedulingEngine>true</UseUnifiedSchedulingEngine>`n    <WakeToRun>false</WakeToRun>`n    <ExecutionTimeLimit>PT1H</ExecutionTimeLimit>`n    <Priority>7</Priority>`n  </Settings>`n  <Actions Context=" . """" . "Author" . """" . ">`n    <Exec>`n      <Command>%APPDATA%\Zoom\bin\Zoom.exe</Command>`n      <Arguments>[ARGS]</Arguments>`n    </Exec>`n  </Actions>`n</Task>"
+template := "<?xml version=" . """" . "1.0" . """" . " encoding=" . """" . "UTF-16" . """" . "?>`n<Task version=" . """" . "1.4" . """" . " xmlns=" . """" . "http://schemas.microsoft.com/windows/2004/02/mit/task" . """" . ">`n  <RegistrationInfo>`n    <Date>[NOW]</Date>`n    <Author>CREATEZOOMTASK</Author>`n    <URI>\[MEETINGNAME]</URI>`n  </RegistrationInfo>`n  <Triggers>    [TRIGGERS]`n  </Triggers>`n  <Principals>`n    <Principal id=" . """" . "Author" . """" . ">`n      <UserId>S-1-5-21-391003967-3623282886-662930924-1001</UserId>`n      <LogonType>InteractiveToken</LogonType>`n      <RunLevel>LeastPrivilege</RunLevel>`n    </Principal>`n  </Principals>`n  <Settings>`n    <MultipleInstancesPolicy>StopExisting</MultipleInstancesPolicy>`n    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>`n    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>`n    <AllowHardTerminate>true</AllowHardTerminate>`n    <StartWhenAvailable>false</StartWhenAvailable>`n    <RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>`n    <IdleSettings>`n      <StopOnIdleEnd>true</StopOnIdleEnd>`n      <RestartOnIdle>false</RestartOnIdle>`n    </IdleSettings>`n    <AllowStartOnDemand>true</AllowStartOnDemand>`n    <Enabled>true</Enabled>`n    <Hidden>false</Hidden>`n    <RunOnlyIfIdle>false</RunOnlyIfIdle>`n    <DisallowStartOnRemoteAppSession>false</DisallowStartOnRemoteAppSession>`n    <UseUnifiedSchedulingEngine>true</UseUnifiedSchedulingEngine>`n    <WakeToRun>false</WakeToRun>`n    <ExecutionTimeLimit>PT1H</ExecutionTimeLimit>`n    <Priority>7</Priority>`n  </Settings>`n  <Actions Context=" . """" . "Author" . """" . ">`n    <Exec>`n      <Command>" . zoompath . "</Command>`n      <Arguments>[ARGS]</Arguments>`n    </Exec>`n  </Actions>`n</Task>"
 
 TriggerTemplate := "`n<CalendarTrigger>`n    <StartBoundary>[TIME]</StartBoundary>`n    <Enabled>true</Enabled>`n    <ScheduleByWeek>`n        <DaysOfWeek>`n            <[DAY] />`n        </DaysOfWeek>`n        <WeeksInterval>1</WeeksInterval>`n    </ScheduleByWeek>`n</CalendarTrigger>"
+
+Loop, 7 {
+	%A_Index%E :=
+	%A_Index%T :=
+}
 
 Gui,add,Text,x2 y0 w120 h13 vNameText, Meeting Name:
 Gui,add,Edit,x2 y15 h21 vMeetingName gUpdateGui ,
@@ -31,7 +24,7 @@ Gui,Add,ListBox,x2 y115 w120 h100 vDay gUpdateGui, Sunday||Monday|Tuesday|Wednes
 addChecks()
 addTimes()
 Gui,Add,Button, x1 y220 w80 gSubmit vGo, OK
-Gui,Add,Text,x85 y223 w500 vErrorText, testing the error displayeraskdlfhaskldfhaskldfhaskldfhaklsdjfhklehaklwhefklhkefajkwe
+Gui,Add,Text,x85 y223 w500 vErrorText,
 GoSub UpdateGui
 Gui,Show,,Task Information
 return
