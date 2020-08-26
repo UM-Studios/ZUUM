@@ -23,21 +23,74 @@ template := "<?xml version=" . """" . "1.0" . """" . " encoding=" . """" . "UTF-
 TriggerTemplate := "`n<CalendarTrigger>`n    <StartBoundary>[TIME]</StartBoundary>`n    <Enabled>true</Enabled>`n    <ScheduleByWeek>`n        <DaysOfWeek>`n            <[DAY] />`n        </DaysOfWeek>`n        <WeeksInterval>1</WeeksInterval>`n    </ScheduleByWeek>`n</CalendarTrigger>"
 
 Gui,add,Text,x2 y0 w120 h13 vNameText, Meeting Name:
-Gui,add,Edit,x2 y15 h21 vMeetingName,
+Gui,add,Edit,x2 y15 h21 vMeetingName gUpdateGui ,
 Gui,Add,Text,x2 y50 w120 h13 vPasteText,Paste Zoom link:
-Gui,Add,Edit,x2 y65 w400 h21 vLink,
+Gui,Add,Edit,x2 y65 w400 h21 vLink gUpdateGui,
 Gui,Add,Text,x2 y100 w100 h13 vSelectDay,Select Day:
-Gui,Add,DropDownList,x2 y120 w120 vDay gUpdateGui, Sunday||Monday|Tuesday|Wednesday|Thursday|Friday
+Gui,Add,ListBox,x2 y115 w120 h100 vDay gUpdateGui, Sunday||Monday|Tuesday|Wednesday|Thursday|Friday|
 addChecks()
 addTimes()
-Gui,Add,Button, x1 y150 w80 gSubmit, OK
-gosub UpdateGui
+Gui,Add,Button, x1 y220 w80 gSubmit vGo, OK
+Gui,Add,Text,x85 y223 w500 vErrorText, testing the error displayeraskdlfhaskldfhaskldfhaskldfhaklsdjfhklehaklwhefklhkefajkwe
+GoSub UpdateGui
 Gui,Show,,Task Information
+return
+
+UpdateGui:
+	Gui, submit, NoHide
+	hideall()
+	sum := 0
+	Loop, 7 {
+		sum += %A_Index%E
+	}
+	if (MeetingName = "") {
+		GuiControl, Text, ErrorText, Missing meeting name
+		GuiControl, Disable, Go
+	} else if (!RegExMatch(MeetingName, "^[\S]+$")) {
+		GuiControl, Text, ErrorText, No spaces allowed in meeting name
+		GuiControl, Disable, Go
+	} else if (Link = "") {
+		GuiControl, Text, ErrorText, Missing Zoom link
+		GuiControl, Disable, Go
+	} else if (!RegExMatch(Link, "^(?:(?:https?:\/\/)?(?:us02web\.)?zoom\.us\/j\/)(\d+)\??(pwd=[a-zA-Z0-9]+)?$")) {
+		GuiControl, Text, ErrorText, Invalid Zoom link
+		GuiControl, Disable, Go
+	} else if (sum = 0) {
+		GuiControl, Text, ErrorText, No time scheduled
+		GuiControl, Disable, Go
+	} else {
+		GuiControl, Text, ErrorText, You should be good to go!
+		GuiControl, Enable, Go
+	}
+	GuiControl, Show, ErrorText
+	show(dayNumber(Day))
+	selected := dayNumber(Day)
+	choice := "|"
+	Loop, 7 {
+		selTime := 
+		dayNumber := (mod(A_Index+5, 7)+1)
+		choice .= dayName(daynumber)
+		if (%dayNumber%E)
+			selTime := RegExReplace(%dayNumber%T, "(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})", " $4:$5:$6")
+			choice .= selTime
+		choice .= "|"
+		if (selected = mod(A_Index+5, 7)+1)
+			choice .= "|"
+	}
+	;msgbox % choice
+	GuiControl,,Day,%choice%
+	;GuiControl, Focus, NameText
+return
+
+TUpdateGui:
+	GoSub UpdateGui
+	focus := dayNumber(Day) . "E"
+	GuiControl, Focus, %focus%
 return
 
 Submit:
 	Gui, submit, nohide
-	argument := RegExReplace(Link, "(?:(?:https?:\/\/)?zoom\.us\/j\/)(\d+)\??(pwd=[a-zA-Z0-9]+)?", """" . "--url=zoommtg://zoom.us/join?action=join&amp;confno=$1&amp;$2" . """")
+	argument := RegExReplace(Link, "(?:(?:https?:\/\/)?(?:us02web\.)?zoom\.us\/j\/)(\d+)\??(pwd=[a-zA-Z0-9]+)?", """" . "--url=zoommtg://zoom.us/join?action=join&amp;confno=$1&amp;$2" . """")
 	MeetingName := StrReplace(MeetingName, " ")
 	FormatTime, now, A_Now, yyyy-MM-dd'T'HH:mm:ss
 	withNow := StrReplace(template, "[NOW]", now)
@@ -46,7 +99,7 @@ Submit:
 		if (%A_Index%E) {
 			;seltime := %A_Index%T
 			;FormatTime, selectedtime, seltime, yyyy-MM-dd'T'HH:mm:ss
-			selectedtime := RegExReplace(%A_Index%T, "(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})", "$1-$2-$3T$4:$5:$6" )
+			selectedtime := RegExReplace(%A_Index%T, "(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})", "$1-$2-$3T$4:$5:$6")
 			append := StrReplace(TriggerTemplate, "[TIME]", selectedtime)
 			append := StrReplace(append, "[DAY]", dayName(A_Index))
 			triggers .= append
@@ -60,34 +113,6 @@ Submit:
 	RunWait, cmd.exe /c schtasks.exe /create /XML task.xml /tn %filename%,,hide
 	FileDelete, task.xml
 	exitapp
-return
-
-UpdateGui:
-	Gui, submit, NoHide
-	hideall()
-	switch Day {
-		case "Sunday":
-			show(7)
-		return
-		case "Monday":
-			show(1)
-		return
-		case "Tuesday":
-			show(2)
-		return
-		case "Wednesday":
-			show(3)
-		return
-		case "Thursday":
-			show(4)
-		return
-		case "Friday":
-			show(5)
-		return
-		case "Saturday":
-			show(6)
-		return
-	}
 return
 
 dayName(number) {
@@ -109,14 +134,36 @@ dayName(number) {
 	}
 }
 
+dayNumber(name) {
+	name := RegExReplace(name, "([A-Z][a-zA-Z]+day)( (\d{2}:?){3})?", "$1")
+	switch name {
+		case "Sunday":
+		return 7
+		case "Monday":
+		return 1
+		case "Tuesday":
+		return 2
+		case "Wednesday":
+		return 3
+		case "Thursday":
+		return 4
+		case "Friday":
+		return 5
+		case "Saturday":
+		return 6
+	}
+}
+
 addChecks() {
 	loop, 7 {
-		Gui,Add,Checkbox,x130 y124 w70 h13 v%A_Index%E gUpdateGui,Enabled
+		height := 106+12.9*(mod(A_Index, 7)+1)
+		Gui,Add,Checkbox,x130 y%height% w70 h13 v%A_Index%E gUpdateGui,Enabled
 	}
 }
 addTimes() {
 	loop, 7 {
-		Gui,Add,DateTime,x200 y120 w100 h21 v%A_Index%T,Time
+		height := 102+12.9*(mod(A_Index, 7)+1)
+		Gui,Add,DateTime,x200 y%height% w100 h21 v%A_Index%T gTUpdateGui,Time
 	}
 }
 
@@ -127,6 +174,7 @@ show(day) {
 }
 
 hideall() {
+	GuiControl, Hide, ErrorText
 	loop, 7 {
 		GuiControl, Hide, %A_Index%E
 		GuiControl, Hide, %A_Index%T
