@@ -50,7 +50,7 @@ UpdateGui:
 	} else if (Link = "") {
 		GuiControl, Text, ErrorText, Missing Zoom link
 		GuiControl, Disable, Go
-	} else if (!RegExMatch(Link, "^(?:(?:https?:\/\/)?(?:us02web\.)?zoom\.us\/j\/)(\d+)\??(pwd=[a-zA-Z0-9]+)?$")) {
+	} else if (!RegExMatch(Link, "^(?:(?:https?:\/\/)?(?:us02web\.)?zoom\.us\/[jw]\/)(\d+)\??(?:tk=[a-zA-Z0-9]+-[a-zA-Z0-9]+_[a-zA-Z0-9]+\.[a-zA-Z0-9]+&)?(pwd=[a-zA-Z0-9]+)?")) {
 		GuiControl, Text, ErrorText, Invalid Zoom link
 		GuiControl, Disable, Go
 	} else if (sum = 0) {
@@ -88,7 +88,7 @@ return
 
 Submit:
 	Gui, submit, nohide
-	argument := RegExReplace(Link, "(?:(?:https?:\/\/)?(?:us02web\.)?zoom\.us\/j\/)(\d+)\??(pwd=[a-zA-Z0-9]+)?", """" . "--url=zoommtg://zoom.us/join?action=join&amp;confno=$1&amp;$2" . """")
+	argument := RegExReplace(Link, "(?:(?:https?:\/\/)?(?:us02web\.)?zoom\.us\/[jw]\/)(\d+)\??(?:tk=[a-zA-Z0-9]+-[a-zA-Z0-9]+_[a-zA-Z0-9]+\.[a-zA-Z0-9]+&)?(pwd=[a-zA-Z0-9]+)?", """" . "--url=zoommtg://zoom.us/join?action=join&amp;confno=$1&amp;$2" . """")
 	MeetingName := StrReplace(MeetingName, " ")
 	FormatTime, now, A_Now, yyyy-MM-dd'T'HH:mm:ss
 	withNow := StrReplace(template, "[NOW]", now)
