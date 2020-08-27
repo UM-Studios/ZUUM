@@ -4,6 +4,10 @@ This script creates a GUI for creating task scheduler tasks to run zoom meetings
 
 You only need the .exe file unless you want to customize the script. Simply run it and follow the instructions on screen.
 
+## Instructions
+
+You can download the .exe file by clicking on it then clicking download. Simply double click the .exe file to run the script. 
+
 ## Specifications
 
 Meeting Name will identify the task. The task name will be ZoomJoin\[MeetingName\].
