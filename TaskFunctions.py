@@ -15,7 +15,6 @@ class Trigger:
         self.time = time
 
 class Task:
-    
     def __init__(self, name, link, triggers = []):
         self.linkre = re.compile(r"^(?:(?:https?:\/\/)?(?:us02web\.)?zoom\.us\/[jw]\/)(\d+)\??(tk=[a-zA-Z0-9_.-]+)?&?(pwd=[a-zA-Z0-9]+)?$")
         self.argsre = re.compile(r'"--url=zoommtg:\/\/zoom.us\/join\?action=join(?:&confno=)?(\d+)&?(tk=[a-zA-Z0-9_.-]+)?&?(pwd=[a-zA-Z0-9]+)?"')
@@ -24,6 +23,8 @@ class Task:
             m = re.match(self.linkre, link)
         elif re.match(self.argsre, link):
             m = re.match(self.argsre, link)
+        else:
+            m = re.compile(r"()()()").match('')
         self.args = [str(i or '') for i in m.groups()]
         self.triggers = triggers
         self.userid = re.compile(r"S-1-5-21-(\d+-?)+").search(cmd_command("whoami /user /fo csv /nh")[0].decode("utf-8")).group(0)
@@ -33,25 +34,43 @@ class Task:
         return r'"--url=zoommtg://zoom.us/join?action=join&confno='+self.args[0]+r'&'+self.args[1]+r'&'+self.args[2]+r'"'
     def get_link(self):
         return 'https://zoom.us/w/'+str(self.args[0])+'?'+str(self.args[1])+'&'+str(self.args[2])
+    def set_link(self, link):
+        if re.match(self.linkre, link):
+            m = re.match(self.linkre, link)
+        else: 
+            raise ValueError("Invalid Link")
+        self.args = [str(i or '') for i in m.groups()]
+    def set_args(self, args):
+        if re.match(self.argsre, args):
+            m = re.match(self.argsre, args)
+        else: 
+            raise ValueError("Invalid Argument")
+        self.args = [str(i or '') for i in m.groups()]
+    def replace_trigger(self, index, new):
+        self.triggers[index] = new
+    def rename(self, name):
+        self.name = name
+    
 
 def build_XML(tree, task, path, author="CREATEZOOMTASK",):
-    root = tree.getroot()[0]
-    root[0].text = datetime.datetime.now().isoformat(timespec='seconds')
-    root[1].text = author
-    root[2].text = task.name
+    ns = {'ns0': 'http://schemas.microsoft.com/windows/2004/02/mit/task'}
+    root = tree.getroot().find("./ns0:RegistrationInfo", ns)
+    root.find("./ns0:Date", ns).text = datetime.datetime.now().isoformat(timespec='seconds')
+    root.find("./ns0:Author", ns).text = author
+    root.find("./ns0:URI", ns).text = task.name
 
-    root = tree.getroot()[1]
+    root = tree.getroot().find("./ns0:Triggers", ns)
     for trigger in task.triggers or []:
         subroot = create_XML_tree('trigger').getroot()
-        subroot[0].text = trigger.time.isoformat(timespec='seconds')
-        ET.SubElement(subroot[2][0], '{http://schemas.microsoft.com/windows/2004/02/mit/task}'+trigger.day)
+        subroot.find("./ns0:StartBoundary", ns).text = trigger.time.isoformat(timespec='seconds')
+        ET.SubElement(subroot.find("./ns0:ScheduleByWeek/ns0:DaysOfWeek", ns), '{http://schemas.microsoft.com/windows/2004/02/mit/task}'+trigger.day)
         root.append(subroot)
 
-    tree.getroot()[2][0][0].text = task.userid
+    tree.getroot().find("./ns0:Principals/ns0:Principal/ns0:UserId", ns).text = task.userid
 
-    root = tree.getroot()[4][0]
-    root[0].text = path
-    root[1].text = task.get_args()
+    root = tree.getroot().find("./ns0:Actions/ns0:Exec", ns)
+    root.find("./ns0:Command", ns).text = path
+    root.find("./ns0:Arguments", ns).text = task.get_args()
     return tree
 
 def create_XML_tree(type):
@@ -75,13 +94,14 @@ def write_XML(tree, install=False, filename='task', taskname='Unnamed'):
 
 def get_task_list():
     #tree = ET.parse('test.xml')
+    ns = {'ns0': 'http://schemas.microsoft.com/windows/2004/02/mit/task'}
     root = ET.fromstring(('<?xml version="1.0" encoding="UTF-16"?>'+cmd_command(f"schtasks /query /tn \\ZoomJoin\\ /xml")[0].decode("utf-8").replace('<?xml version="1.0" encoding="UTF-16"?>', '')).encode('utf-16-be'))
     tlist = []
     for i in range(len(root)):
         triggers = []
         for j in range(len(root[i][3])):
-            triggers.append(Trigger(root[i][3][j][1][1][0].tag.split('}')[1], root[i][3][j][0].text))
-        tlist.append(Task(root[i][0][2].text, root[i][4][0][1].text, triggers))
+            triggers.append(Trigger(root[i].find("./ns0:Triggers", ns)[j].find("./ns0:ScheduleByWeek/ns0:DaysOfWeek", ns)[0].tag.split('}')[1], datetime.datetime.fromisoformat(root[i].find("./ns0:Triggers", ns)[j].find("./ns0:StartBoundary", ns).text)))
+        tlist.append(Task(root[i].find("./ns0:RegistrationInfo/ns0:URI", ns).text, root[i].find("./ns0:Actions/ns0:Exec/ns0:Arguments", ns).text, triggers))
     return tlist
 
 def get_task_XML():
@@ -90,35 +110,22 @@ def get_task_XML():
 
 #______________testing______________
 if __name__ == "__main__":
+    ns = {'ns0': 'http://schemas.microsoft.com/windows/2004/02/mit/task'}
     days = [Trigger("Sunday"), Trigger("Monday")]
-    #hello = Task('hello where', 'https://us02web.zoom.us/w/88392313240?tk=E5YZhz_cGRVZvNoUcBRrrxatyH6E5xI66QVzcMRC7O4.DQIAAAAUlJepmBZ0RW9LMFlWVlNxU0tmYlRMOVRZV1BRAAAAAAAAAAAAAAAAAAAAAAAAAAAA&pwd=Z1R5cXQ4K0M2UHhFOEFrbm5xazBHUT09', days)
-    #print(write_XML(test_xml, taskname='hello there'))
+    hello = Task('hello where', 'https://us02web.zoom.us/w/88392313240?tk=E5YZhz_cGRVZvNoUcBRrrxatyH6E5xI66QVzcMRC7O4.DQIAAAAUlJepmBZ0RW9LMFlWVlNxU0tmYlRMOVRZV1BRAAAAAAAAAAAAAAAAAAAAAAAAAAAA&pwd=Z1R5cXQ4K0M2UHhFOEFrbm5xazBHUT09', days)
+
+    write_XML(build_XML(create_XML_tree('task'), get_task_list()[1], zoompath),filename='testy')
 
     #print(get_task_list()[2].triggers[0].day)
-    argsre = re.compile(r'"--url=zoommtg:\/\/zoom.us\/join\?action=join(?:&confno=)?(\d+)&?(tk=[a-zA-Z0-9_.-]+)?&?(pwd=[a-zA-Z0-9]+)?"')
-    linkre = re.compile(r"^(?:(?:https?:\/\/)?(?:us02web\.)?zoom\.us\/[jw]\/)(\d+)\??(tk=[a-zA-Z0-9_.-]+)?&?(pwd=[a-zA-Z0-9]+)?$")
+    #argsre = re.compile(r'"--url=zoommtg:\/\/zoom.us\/join\?action=join(?:&confno=)?(\d+)&?(tk=[a-zA-Z0-9_.-]+)?&?(pwd=[a-zA-Z0-9]+)?"')
+    #linkre = re.compile(r"^(?:(?:https?:\/\/)?(?:us02web\.)?zoom\.us\/[jw]\/)(\d+)\??(tk=[a-zA-Z0-9_.-]+)?&?(pwd=[a-zA-Z0-9]+)?$")
 
     #print(get_task_list().getroot()[0][4][0][1].text)
     #print(get_task_list().getroot()[0][4][0][1].text)
-    print(get_task_list()[3])
+    list = get_task_list()
+    
 
-    viewer = get_task_XML().getroot()[4][4][0][1].text
+    print([list[i].triggers for i in range(len(list))])
+    get_task_XML().write("test.xml", encoding='UTF-16')
+    #viewer = get_task_XML().getroot()[1].find("./ns0:Triggers", ns)[0].find("./ns0:ScheduleByWeek/ns0:DaysOfWeek", ns)[0].tag.split('}')[1]
     #print(viewer)
-    #print(re.match(argsre, viewer).group(1))
-    #print(re.match(argsre, '"--url=zoommtg://zoom.us/join?action=join&amp;confno=88392313240&amp;tk=E5YZhz_cGRVZvNoUcBRrrxatyH6E5xI66QVzcMRC7O4.DQIAAAAUlJepmBZ0RW9LMFlWVlNxU0tmYlRMOVRZV1BRAAAAAAAAAAAAAAAAAAAAAAAAAAAA&amp;pwd=Z1R5cXQ4K0M2UHhFOEFrbm5xazBHUT09"').group(1))
-    #print(re.match(linkre, 'https://us02web.zoom.us/w/88392313240?tk=E5YZhz_cGRVZvNoUcBRrrxatyH6E5xI66QVzcMRC7O4.DQIAAAAUlJepmBZ0RW9LMFlWVlNxU0tmYlRMOVRZV1BRAAAAAAAAAAAAAAAAAAAAAAAAAAAA&pwd=Z1R5cXQ4K0M2UHhFOEFrbm5xazBHUT09').group(1))
-    #print(create_XML_tree()[0][0].tag)
-    #print(create_XML_tree()[0].text)
-    #print(build_XML(create_XML_tree('task'), 'hello there', days, 'userid', 'path', 'args'))
-    #tree = build_XML(create_XML_tree('task'), hello, zoompath)
-    #write_XML(tree, True)
-    #print(cmd_command("whoami /user /fo csv /nh"))
-    
-    #print(test_xml)
-    
-    #xlm = cmd_command(f"schtasks /query /tn \\ZoomJoin\\ /xml")[0].decode("utf-8")
-    #xlm = ('<?xml version="1.0" encoding="UTF-16"?>'+cmd_command(f"schtasks /query /tn \\ZoomJoin\\ /xml")[0].decode("utf-8").replace('<?xml version="1.0" encoding="UTF-16"?>', ''))
-    
-    #fi = open("test2.xml", "w")
-    #fi.write(xlm)
-    #fi.close()
