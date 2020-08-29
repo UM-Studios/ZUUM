@@ -68,8 +68,14 @@ def write_XML(tree, install=False, filename='task', taskname='Unnamed'):
 
 def get_task_list():
     #tree = ET.parse('test.xml')
-    tree = ET.fromstring(('<?xml version="1.0" encoding="UTF-16"?>'+cmd_command(f"schtasks /query /tn \\ZoomJoin\\ /xml")[0].decode("utf-8").replace('<?xml version="1.0" encoding="UTF-16"?>', '')).encode('utf-16-be'))
-    
+    root = ET.fromstring(('<?xml version="1.0" encoding="UTF-16"?>'+cmd_command(f"schtasks /query /tn \\ZoomJoin\\ /xml")[0].decode("utf-8").replace('<?xml version="1.0" encoding="UTF-16"?>', '')).encode('utf-16-be'))
+    tlist = []
+    for i in range(len(root)):
+        triggers = []
+        for j in range(len(root[i][3])):
+            triggers.append(Trigger(root[i][3][j][1][1][0].tag.split('}')[1], root[i][3][j][0].text))
+        tlist.append(Task(root[i][0][2].text, 'link', triggers))
+    return tlist
 
 #______________testing______________
 if __name__ == "__main__":
@@ -77,12 +83,12 @@ if __name__ == "__main__":
     hello = Task('hello where', 'https://us02web.zoom.us/w/88392313240?tk=E5YZhz_cGRVZvNoUcBRrrxatyH6E5xI66QVzcMRC7O4.DQIAAAAUlJepmBZ0RW9LMFlWVlNxU0tmYlRMOVRZV1BRAAAAAAAAAAAAAAAAAAAAAAAAAAAA&pwd=Z1R5cXQ4K0M2UHhFOEFrbm5xazBHUT09', days)
     #print(write_XML(test_xml, taskname='hello there'))
 
-
+    print(get_task_list()[2].triggers[0].day)
     #print(create_XML_tree()[0][0].tag)
     #print(create_XML_tree()[0].text)
     #print(build_XML(create_XML_tree('task'), 'hello there', days, 'userid', 'path', 'args'))
-    tree = build_XML(create_XML_tree('task'), hello, zoompath)
-    write_XML(tree, True)
+    #tree = build_XML(create_XML_tree('task'), hello, zoompath)
+    #write_XML(tree, True)
     #get_task_list()
     #print(cmd_command("whoami /user /fo csv /nh"))
     
