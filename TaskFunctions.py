@@ -50,7 +50,15 @@ class Task:
         self.triggers[index] = new
     def rename(self, name):
         self.name = name
-    
+    def get_task_name(self):
+        return self.name.split('\\')[-1]
+
+def name_validate(name):
+    return bool(re.compile(r'^(?!(?:COM[0-9]|CON|LPT[0-9]|NUL|PRN|AUX|com[0-9]|con|lpt[0-9]|nul|prn|aux)|\s|[\.]{2,})[^\\\/:*"?<>|]{1,254}(?<![\s\.])$').match(name))
+
+def link_validate(link):
+    return bool(re.compile(r"^(?:(?:https?:\/\/)?(?:us02web\.)?zoom\.us\/[jw]\/)(\d+)\??(tk=[a-zA-Z0-9_.-]+)?&?(pwd=[a-zA-Z0-9]+)?$").match(link))
+
 
 def build_XML(tree, task, path, author="CREATEZOOMTASK",):
     ns = {'ns0': 'http://schemas.microsoft.com/windows/2004/02/mit/task'}
@@ -108,6 +116,12 @@ def get_task_XML():
     root = ET.fromstring(('<?xml version="1.0" encoding="UTF-16"?>'+cmd_command(f"schtasks /query /tn \\ZoomJoin\\ /xml")[0].decode("utf-8").replace('<?xml version="1.0" encoding="UTF-16"?>', '')).encode('utf-16-be'))
     return ET.ElementTree(root)
 
+def run_task(task):
+    cmd_command(f"schtasks /run /tn {task.name}")
+
+def delete_task(task):
+    cmd_command(f"schtasks /delete /tn {task.name}")
+
 #______________testing______________
 if __name__ == "__main__":
     ns = {'ns0': 'http://schemas.microsoft.com/windows/2004/02/mit/task'}
@@ -124,8 +138,9 @@ if __name__ == "__main__":
     #print(get_task_list().getroot()[0][4][0][1].text)
     list = get_task_list()
     
+    #run_task(list[0])
 
-    print([list[i].triggers for i in range(len(list))])
+    print(list[0].get_task_name())
     get_task_XML().write("test.xml", encoding='UTF-16')
     #viewer = get_task_XML().getroot()[1].find("./ns0:Triggers", ns)[0].find("./ns0:ScheduleByWeek/ns0:DaysOfWeek", ns)[0].tag.split('}')[1]
     #print(viewer)
