@@ -117,10 +117,10 @@ def get_task_XML():
     return ET.ElementTree(root)
 
 def run_task(task):
-    cmd_command(f"schtasks /run /tn {task.name}")
+    cmd_command(f'schtasks /run /tn "{task.name}"')
 
 def delete_task(task):
-    cmd_command(f"schtasks /delete /tn {task.name}")
+    cmd_command(f'schtasks /delete /tn "{task.name}" /F')
 
 #______________testing______________
 if __name__ == "__main__":
@@ -128,7 +128,7 @@ if __name__ == "__main__":
     days = [Trigger("Sunday"), Trigger("Monday")]
     hello = Task('hello where', 'https://us02web.zoom.us/w/88392313240?tk=E5YZhz_cGRVZvNoUcBRrrxatyH6E5xI66QVzcMRC7O4.DQIAAAAUlJepmBZ0RW9LMFlWVlNxU0tmYlRMOVRZV1BRAAAAAAAAAAAAAAAAAAAAAAAAAAAA&pwd=Z1R5cXQ4K0M2UHhFOEFrbm5xazBHUT09', days)
 
-    write_XML(build_XML(create_XML_tree('task'), get_task_list()[1], zoompath),filename='testy')
+    write_XML(build_XML(create_XML_tree('task'), hello, zoompath), filename='testy')
 
     #print(get_task_list()[2].triggers[0].day)
     #argsre = re.compile(r'"--url=zoommtg:\/\/zoom.us\/join\?action=join(?:&confno=)?(\d+)&?(tk=[a-zA-Z0-9_.-]+)?&?(pwd=[a-zA-Z0-9]+)?"')
