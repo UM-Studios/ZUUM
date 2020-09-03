@@ -18,6 +18,7 @@ class Task:
     def __init__(self, name, link, triggers = []):
         self.linkre = re.compile(r"^(?:(?:https?:\/\/)?(?:us02web\.)?zoom\.us\/[jw]\/)(\d+)\??(tk=[a-zA-Z0-9_.-]+)?&?(pwd=[a-zA-Z0-9]+)?$")
         self.argsre = re.compile(r'"--url=zoommtg:\/\/zoom.us\/join\?action=join(?:&confno=)?(\d+)&?(tk=[a-zA-Z0-9_.-]+)?&?(pwd=[a-zA-Z0-9]+)?"')
+        self.weekdays = {"Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3, "Friday": 4, "Saturday": 5, "Sunday": 6, }
         self.name = name
         if re.match(self.linkre, link):
             m = re.match(self.linkre, link)
@@ -52,6 +53,16 @@ class Task:
         self.name = name
     def get_task_name(self):
         return self.name.split('\\')[-1]
+    def get_next_trigger(self):
+        ahead = []
+        for i in range(len(self.triggers)):
+            min = 0
+            nextday = datetime.datetime.now() + datetime.timedelta((self.weekdays[self.triggers[i].day] - datetime.datetime.now().weekday())%7)
+            nextdatetime = datetime.datetime.combine(nextday, self.triggers[i].time.time())
+            ahead.append((nextdatetime - datetime.datetime.now()) % datetime.timedelta(days=7))
+            if ahead[i] < ahead[min]:
+                min = i
+        return self.triggers[min] if self.triggers else ''
 
 def name_validate(name):
     return bool(re.compile(r'^(?!(?:COM[0-9]|CON|LPT[0-9]|NUL|PRN|AUX|com[0-9]|con|lpt[0-9]|nul|prn|aux)|\s|[\.]{2,})[^\\\/:*"?<>|]{1,254}(?<![\s\.])$').match(name))
@@ -125,10 +136,12 @@ def delete_task(task):
 #______________testing______________
 if __name__ == "__main__":
     ns = {'ns0': 'http://schemas.microsoft.com/windows/2004/02/mit/task'}
-    days = [Trigger("Sunday"), Trigger("Monday")]
+    days = [Trigger("Sunday"), Trigger("Wednesday", datetime.datetime(year=2020, month=9, day=2, hour=21))]
     hello = Task('hello where', 'https://us02web.zoom.us/w/88392313240?tk=E5YZhz_cGRVZvNoUcBRrrxatyH6E5xI66QVzcMRC7O4.DQIAAAAUlJepmBZ0RW9LMFlWVlNxU0tmYlRMOVRZV1BRAAAAAAAAAAAAAAAAAAAAAAAAAAAA&pwd=Z1R5cXQ4K0M2UHhFOEFrbm5xazBHUT09', days)
 
-    write_XML(build_XML(create_XML_tree('task'), hello, zoompath), filename='testy')
+    print(hello.get_next_trigger().day)
+
+    #write_XML(build_XML(create_XML_tree('task'), hello, zoompath), filename='testy')
 
     #print(get_task_list()[2].triggers[0].day)
     #argsre = re.compile(r'"--url=zoommtg:\/\/zoom.us\/join\?action=join(?:&confno=)?(\d+)&?(tk=[a-zA-Z0-9_.-]+)?&?(pwd=[a-zA-Z0-9]+)?"')
@@ -140,7 +153,7 @@ if __name__ == "__main__":
     
     #run_task(list[0])
 
-    print(list[0].get_task_name())
-    get_task_XML().write("test.xml", encoding='UTF-16')
+    #print(list[0].get_task_name())
+    #get_task_XML().write("test.xml", encoding='UTF-16')
     #viewer = get_task_XML().getroot()[1].find("./ns0:Triggers", ns)[0].find("./ns0:ScheduleByWeek/ns0:DaysOfWeek", ns)[0].tag.split('}')[1]
     #print(viewer)
