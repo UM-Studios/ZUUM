@@ -114,13 +114,16 @@ def write_XML(tree, install=False, filename='task', taskname='Unnamed'):
 def get_task_list():
     #tree = ET.parse('test.xml')
     ns = {'ns0': 'http://schemas.microsoft.com/windows/2004/02/mit/task'}
-    root = ET.fromstring(('<?xml version="1.0" encoding="UTF-16"?>'+cmd_command(f"schtasks /query /tn \\ZoomJoin\\ /xml")[0].decode("utf-8").replace('<?xml version="1.0" encoding="UTF-16"?>', '')).encode('utf-16-be'))
     tlist = []
-    for i in range(len(root)):
-        triggers = []
-        for j in range(len(root[i][3])):
-            triggers.append(Trigger(root[i].find("./ns0:Triggers", ns)[j].find("./ns0:ScheduleByWeek/ns0:DaysOfWeek", ns)[0].tag.split('}')[1], datetime.datetime.fromisoformat(root[i].find("./ns0:Triggers", ns)[j].find("./ns0:StartBoundary", ns).text)))
-        tlist.append(Task(root[i].find("./ns0:RegistrationInfo/ns0:URI", ns).text, root[i].find("./ns0:Actions/ns0:Exec/ns0:Arguments", ns).text, triggers))
+    query = cmd_command(f"schtasks /query /tn \\ZoomJoin\\ /xml")[0]
+    #print(query)
+    if not query.decode("utf-8").startswith('ERROR'):
+        root = ET.fromstring(('<?xml version="1.0" encoding="UTF-16"?>'+query.decode("utf-8").replace('<?xml version="1.0" encoding="UTF-16"?>', '')).encode('utf-16-be'))
+        for i in range(len(root)):
+            triggers = []
+            for j in range(len(root[i][3])):
+                triggers.append(Trigger(root[i].find("./ns0:Triggers", ns)[j].find("./ns0:ScheduleByWeek/ns0:DaysOfWeek", ns)[0].tag.split('}')[1], datetime.datetime.fromisoformat(root[i].find("./ns0:Triggers", ns)[j].find("./ns0:StartBoundary", ns).text)))
+            tlist.append(Task(root[i].find("./ns0:RegistrationInfo/ns0:URI", ns).text, root[i].find("./ns0:Actions/ns0:Exec/ns0:Arguments", ns).text, triggers))
     return tlist
 
 def get_task_XML():
@@ -139,7 +142,8 @@ if __name__ == "__main__":
     days = [Trigger("Sunday"), Trigger("Wednesday", datetime.datetime(year=2020, month=9, day=2, hour=21))]
     hello = Task('hello where', 'https://us02web.zoom.us/w/88392313240?tk=E5YZhz_cGRVZvNoUcBRrrxatyH6E5xI66QVzcMRC7O4.DQIAAAAUlJepmBZ0RW9LMFlWVlNxU0tmYlRMOVRZV1BRAAAAAAAAAAAAAAAAAAAAAAAAAAAA&pwd=Z1R5cXQ4K0M2UHhFOEFrbm5xazBHUT09', days)
 
-    print(hello.get_next_trigger().day)
+    #print(hello.get_next_trigger().day)
+    print(get_task_list())
 
     #write_XML(build_XML(create_XML_tree('task'), hello, zoompath), filename='testy')
 
