@@ -5,7 +5,6 @@ from tkinter import messagebox
 import re
 from TaskFunctions import *
 import datetime
-import calendar
 
 zoompath = r"%APPDATA%\Zoom\bin\Zoom.exe"
 
