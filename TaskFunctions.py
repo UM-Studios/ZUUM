@@ -17,7 +17,7 @@ class Trigger:
 class Task:
     def __init__(self, name, link, triggers = []):
         self.linkre = re.compile(r"^(?:(?:https?:\/\/)?(?:us02web\.)?zoom\.us\/[jw]\/)(\d+)\??(tk=[a-zA-Z0-9_.-]+)?&?(pwd=[a-zA-Z0-9]+)?$")
-        self.argsre = re.compile(r'"--url=zoommtg:\/\/zoom.us\/join\?action=join(?:&confno=)?(\d+)&?(tk=[a-zA-Z0-9_.-]+)?&?(pwd=[a-zA-Z0-9]+)?"')
+        self.argsre = re.compile(r'"(?:--url=)?zoommtg:\/\/zoom.us\/join\?action=join(?:&confno=)?(\d+)&?(tk=[a-zA-Z0-9_.-]+)?&?(pwd=[a-zA-Z0-9]+)?"')
         self.weekdays = {"Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3, "Friday": 4, "Saturday": 5, "Sunday": 6, }
         self.name = name
         if re.match(self.linkre, link):
@@ -126,9 +126,9 @@ def get_task_list():
             tlist.append(Task(root[i].find("./ns0:RegistrationInfo/ns0:URI", ns).text, root[i].find("./ns0:Actions/ns0:Exec/ns0:Arguments", ns).text, triggers))
     return tlist
 
-def get_task_XML():
-    root = ET.fromstring(('<?xml version="1.0" encoding="UTF-16"?>'+cmd_command(f"schtasks /query /tn \\ZoomJoin\\ /xml")[0].decode("utf-8").replace('<?xml version="1.0" encoding="UTF-16"?>', '')).encode('utf-16-be'))
-    return ET.ElementTree(root)
+#def get_task_XML():
+#    root = ET.fromstring(('<?xml version="1.0" encoding="UTF-16"?>'+cmd_command(f"schtasks /query /tn \\ZoomJoin\\ /xml")[0].decode("utf-8").replace('<?xml version="1.0" encoding="UTF-16"?>', '')).encode('utf-16-be'))
+#    return ET.ElementTree(root)
 
 def run_task(task):
     cmd_command(f'schtasks /run /tn "{task.name}"')
