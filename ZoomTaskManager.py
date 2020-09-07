@@ -36,7 +36,8 @@ class MainWindow:
         self.columnLabels.pack(fill=X)
         for task in self.taskframes:
             task.show()
-        self.createButton.pack(side=LEFT)
+        self.createButton.pack(side=LEFT, pady=15)
+        self.adtext.pack(side=LEFT, padx=15)
     def edit(self, task):
         self.popupWindow = Toplevel(self.master)
         self.popupWindow.transient(self.master)
@@ -68,6 +69,7 @@ class MainWindow:
         self.triggersLabel = Sized_Label(self.columnLabels, width=375, height=20, text="Triggers", font=titlefont, anchor='w')
         self.nextRunLabel = Sized_Label(self.columnLabels, width=100, height=20, text="Next Run Time", font=titlefont, anchor='w')
         self.createButton = Button(self.tasklist, text="Create new task", command=self.create, anchor='w')
+        self.adtext = Label(self.tasklist, text="Follow @_umstudios_ on Instagram for more cool programs like this!", font=font.Font(family='Arial', size=10), anchor='w')
         #self.tasklist.pack(fill='y', side=LEFT)#grid(column=0, row=0)
         self.show()
 
