@@ -5,12 +5,18 @@ from tkinter import messagebox
 import re
 from TaskFunctions import *
 import datetime
+import zmlogo
+import base64
 
 zoompath = r"%APPDATA%\Zoom\bin\Zoom.exe"
 
 window = Tk()
 window.title("Zoom Meeting Manager")
 window.geometry("780x400")
+img = base64.b64decode(zmlogo.icon)
+photo = PhotoImage(data = img)
+window.wm_iconphoto(True, photo)
+#window.iconbitmap(img)
 #window.resizable(False, True)
 
 titlefont = font.Font(family='Arial', size=10, underline=1)
