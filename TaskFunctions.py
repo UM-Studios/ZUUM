@@ -7,7 +7,7 @@ import xml.etree.ElementTree as ET
 zoompath = r"%APPDATA%\Zoom\bin\Zoom.exe"
 
 def cmd_command(cmd):
-    return subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()
+    return subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,  close_fds=True).communicate()
 
 class Trigger:
     def __init__(self, day, time=datetime.datetime.now()):

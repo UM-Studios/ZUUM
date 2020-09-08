@@ -9,9 +9,9 @@ import datetime
 zoompath = r"%APPDATA%\Zoom\bin\Zoom.exe"
 
 window = Tk()
-window.title("Zoom Task Manager")
+window.title("Zoom Meeting Manager")
 window.geometry("780x400")
-window.resizable(False, True)
+#window.resizable(False, True)
 
 titlefont = font.Font(family='Arial', size=10, underline=1)
 
@@ -65,10 +65,10 @@ class MainWindow:
         self.canvas.create_window((0,0), window=self.tasklist, anchor='nw')
         self.get_list()
         self.columnLabels = Frame(self.tasklist)
-        self.taskNameLabel = Sized_Label(self.columnLabels, width=150, height=20, text="Tasks", font=titlefont, anchor='w')
-        self.triggersLabel = Sized_Label(self.columnLabels, width=375, height=20, text="Triggers", font=titlefont, anchor='w')
+        self.taskNameLabel = Sized_Label(self.columnLabels, width=150, height=20, text="Meetings", font=titlefont, anchor='w')
+        self.triggersLabel = Sized_Label(self.columnLabels, width=375, height=20, text="Run Times", font=titlefont, anchor='w')
         self.nextRunLabel = Sized_Label(self.columnLabels, width=100, height=20, text="Next Run Time", font=titlefont, anchor='w')
-        self.createButton = Button(self.tasklist, text="Create new task", command=self.create, anchor='w')
+        self.createButton = Button(self.tasklist, text="Add Meeting", command=self.create, anchor='w')
         self.adtext = Label(self.tasklist, text="Follow @_umstudios_ on Instagram for more cool programs like this!", font=font.Font(family='Arial', size=10), anchor='w')
         #self.tasklist.pack(fill='y', side=LEFT)#grid(column=0, row=0)
         self.show()
@@ -83,8 +83,8 @@ class TaskFrame:
             self.triggertext += f"{task.triggers[i].time.time().strftime('%I:%M:%S %p').lstrip('0')} {task.triggers[i].day}"
             if i < len(task.triggers)-1:
                 self.triggertext += ", "
-        self.triggertext += 'No triggers' if self.triggertext == '' else ''
-        self.nexttext = f"{task.get_next_trigger().time.time().strftime('%I:%M:%S %p').lstrip('0')} {task.get_next_trigger().day}" if task.triggers else 'No Triggers'
+        self.triggertext += 'None' if self.triggertext == '' else ''
+        self.nexttext = f"{task.get_next_trigger().time.time().strftime('%I:%M:%S %p').lstrip('0')} {task.get_next_trigger().day}" if task.triggers else 'None'
         self.namebutton = Sized_Label(parent, width=150, height=20, text=task.get_task_name(), anchor='w')
         self.triggers = Sized_Label(parent, width=375, height=20, text=self.triggertext, anchor='w')
         self.nextTrigger = Sized_Label(parent, width=155, height=20, text=self.nexttext, anchor='w')
@@ -169,9 +169,9 @@ class PopupMenu:
         self.get_list()
 
         if type == 'create':
-            self.master.title('Create New Task')
+            self.master.title('Add Meeting')
         elif type == 'edit' and self.task != '':
-            self.master.title('Edit Task')
+            self.master.title('Edit Meeting')
             self.name.set(task.get_task_name())
             self.link.set(task.get_link())
         else:
@@ -195,8 +195,8 @@ class PopupMenu:
         self.linkText = Label(self.entryFrame, text="Paste Zoom Link:")
         self.linkIn = Entry(self.entryFrame, width=51, textvariable=self.link)
         self.linkIn.bind("<FocusOut>", lambda e: self.edit_check('link', self.name.get(), self.link.get(), focusout=True))
-        self.triggerText = Label(self.triggerFrame, font=titlefont, text='Triggers')
-        self.addTriggerButton = Button(self.mainframe, text='Add Trigger', command=self.createTrigger)
+        self.triggerText = Label(self.triggerFrame, font=titlefont, text='Run Times')
+        self.addTriggerButton = Button(self.mainframe, text='Add Run Time', command=self.createTrigger)
         self.okButton = Button(self.confirmFrame, text=('Apply' if type == 'edit' else 'Create'), command=self.install_task)
         self.cancelButton = Button(self.confirmFrame, text='Cancel', command=lambda:self.master.destroy())
         #show
@@ -290,11 +290,11 @@ class TriggerPopup:
         self.triggerframe = triggerframe
         self.type = type
         if self.type == 'create':
-            self.master.title('Create New Trigger')
+            self.master.title('Create New Run Time')
             self.dentry = DateEntry(self.dayFrame, font=('Arial', 15, NORMAL), border=0)
             self.okButton = Button(self.master, text='Create', command=self.create)
         elif self.type == 'edit' and self.triggerframe.trigger != '':
-            self.master.title('Edit Trigger')
+            self.master.title('Edit Run Time')
             self.dentry = DateEntry(self.dayFrame, day=self.triggerframe.trigger.day, time=self.triggerframe.trigger.time, font=('Arial', 13, NORMAL), border=0)
             self.okButton = Button(self.master, text='Apply', command=self.edit)
         else:
