@@ -55,8 +55,8 @@ class Task:
         return self.name.split('\\')[-1]
     def get_next_trigger(self):
         ahead = []
+        min = 0
         for i in range(len(self.triggers)):
-            min = 0
             nextday = datetime.datetime.now() + datetime.timedelta((self.weekdays[self.triggers[i].day] - datetime.datetime.now().weekday())%7)
             nextdatetime = datetime.datetime.combine(nextday, self.triggers[i].time.time())
             ahead.append((nextdatetime - datetime.datetime.now()) % datetime.timedelta(days=7))
@@ -139,11 +139,11 @@ def delete_task(task):
 #______________testing______________
 if __name__ == "__main__":
     ns = {'ns0': 'http://schemas.microsoft.com/windows/2004/02/mit/task'}
-    days = [Trigger("Sunday"), Trigger("Wednesday", datetime.datetime(year=2020, month=9, day=2, hour=21))]
+    days = [Trigger("Friday", datetime.datetime(year=2020, month=9, day=9, hour=10)), Trigger("Wednesday", datetime.datetime(year=2020, month=9, day=9, hour=11))]
     hello = Task('hello where', 'https://us02web.zoom.us/w/88392313240?tk=E5YZhz_cGRVZvNoUcBRrrxatyH6E5xI66QVzcMRC7O4.DQIAAAAUlJepmBZ0RW9LMFlWVlNxU0tmYlRMOVRZV1BRAAAAAAAAAAAAAAAAAAAAAAAAAAAA&pwd=Z1R5cXQ4K0M2UHhFOEFrbm5xazBHUT09', days)
-
-    #print(hello.get_next_trigger().day)
-    print(get_task_list())
+    list = get_task_list()
+    print(f"{list[5].get_next_trigger().time.time().strftime('%I:%M:%S %p').lstrip('0')} {list[5].get_next_trigger().day}")
+    #print(get_task_list())
 
     #write_XML(build_XML(create_XML_tree('task'), hello, zoompath), filename='testy')
 
@@ -153,7 +153,7 @@ if __name__ == "__main__":
 
     #print(get_task_list().getroot()[0][4][0][1].text)
     #print(get_task_list().getroot()[0][4][0][1].text)
-    list = get_task_list()
+    
     
     #run_task(list[0])
 

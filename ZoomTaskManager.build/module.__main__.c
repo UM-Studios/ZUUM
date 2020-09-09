@@ -879,7 +879,7 @@ static void createModuleConstants(void) {
     const_str_digest_847643f31184adde5ef89fa0faf6d3a4 = UNSTREAM_STRING_ASCII(&constant_bin[ 7022 ], 18, 0);
     const_str_plain_block = UNSTREAM_STRING_ASCII(&constant_bin[ 7040 ], 5, 1);
     const_str_plain_data = UNSTREAM_STRING_ASCII(&constant_bin[ 7045 ], 4, 1);
-    const_str_plain_add = UNSTREAM_STRING_ASCII(&constant_bin[ 3602 ], 3, 1);
+    const_str_plain_add = UNSTREAM_STRING_ASCII(&constant_bin[ 3609 ], 3, 1);
     const_str_digest_a655c51a94994a38fad0f2d08ad7390c = UNSTREAM_STRING_ASCII(&constant_bin[ 7049 ], 20, 0);
     const_str_plain_label_3 = UNSTREAM_STRING_ASCII(&constant_bin[ 7069 ], 7, 1);
     const_str_plain_Spinbox = UNSTREAM_STRING_ASCII(&constant_bin[ 1411 ], 7, 1);
