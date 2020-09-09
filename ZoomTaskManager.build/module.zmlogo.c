@@ -33,14 +33,14 @@ PyDictObject *moduledict_zmlogo;
 /* The declarations of module constants used, if any. */
 extern PyObject *const_str_plain___file__;
 static PyObject *const_str_digest_90162ef6067345efbf43ab0183c54cfc;
-extern PyObject *const_str_plain_has_location;
 extern PyObject *const_str_plain_origin;
 extern PyObject *const_str_plain___spec__;
+static PyObject *const_str_digest_8f74b879993b955ce8308c8dbcd5330a;
 extern PyObject *const_tuple_empty;
 extern PyObject *const_str_plain___doc__;
 extern PyObject *const_str_plain___cached__;
 static PyObject *const_str_digest_346e383b5ba75e98698298a1abb5f35c;
-static PyObject *const_str_digest_960e524745b8b52713939d715f505614;
+extern PyObject *const_str_plain_has_location;
 extern PyObject *const_str_plain_icon;
 static PyObject *module_filename_obj;
 
@@ -49,9 +49,9 @@ static bool constants_created = false;
 
 /* Function to create module private constants. */
 static void createModuleConstants(void) {
-    const_str_digest_90162ef6067345efbf43ab0183c54cfc = UNSTREAM_STRING_ASCII(&constant_bin[ 8330 ], 8412, 0);
-    const_str_digest_346e383b5ba75e98698298a1abb5f35c = UNSTREAM_STRING_ASCII(&constant_bin[ 16742 ], 15, 0);
-    const_str_digest_960e524745b8b52713939d715f505614 = UNSTREAM_STRING_ASCII(&constant_bin[ 16757 ], 80, 0);
+    const_str_digest_90162ef6067345efbf43ab0183c54cfc = UNSTREAM_STRING_ASCII(&constant_bin[ 8210 ], 8412, 0);
+    const_str_digest_8f74b879993b955ce8308c8dbcd5330a = UNSTREAM_STRING_ASCII(&constant_bin[ 16622 ], 9, 0);
+    const_str_digest_346e383b5ba75e98698298a1abb5f35c = UNSTREAM_STRING_ASCII(&constant_bin[ 16631 ], 15, 0);
 
     constants_created = true;
 }
@@ -67,11 +67,11 @@ void checkModuleConstants_zmlogo(void) {
 #endif
 
 // The module code objects.
-static PyCodeObject *codeobj_48e31868ad837fb0ae461c65d5d8c223;
+static PyCodeObject *codeobj_c22b0971a8c7ea7daef6372d15d5272a;
 
 static void createModuleCodeObjects(void) {
-    module_filename_obj = const_str_digest_960e524745b8b52713939d715f505614;
-    codeobj_48e31868ad837fb0ae461c65d5d8c223 = MAKE_CODEOBJECT(module_filename_obj, 1, CO_NOFREE, const_str_digest_346e383b5ba75e98698298a1abb5f35c, const_tuple_empty, 0, 0, 0);
+    module_filename_obj = MAKE_RELATIVE_PATH(const_str_digest_8f74b879993b955ce8308c8dbcd5330a);
+    codeobj_c22b0971a8c7ea7daef6372d15d5272a = MAKE_CODEOBJECT(module_filename_obj, 1, CO_NOFREE, const_str_digest_346e383b5ba75e98698298a1abb5f35c, const_tuple_empty, 0, 0, 0);
 }
 
 // The module function declarations.
@@ -476,7 +476,7 @@ PyObject *modulecode_zmlogo(PyObject *module) {
 #endif
 
     // Temp variables if any
-    struct Nuitka_FrameObject *frame_48e31868ad837fb0ae461c65d5d8c223;
+    struct Nuitka_FrameObject *frame_c22b0971a8c7ea7daef6372d15d5272a;
     NUITKA_MAY_BE_UNUSED char const *type_description_1 = NULL;
     bool tmp_result;
     PyObject *exception_type = NULL;
@@ -492,23 +492,23 @@ PyObject *modulecode_zmlogo(PyObject *module) {
     }
     {
         PyObject *tmp_assign_source_2;
-        tmp_assign_source_2 = const_str_digest_960e524745b8b52713939d715f505614;
+        tmp_assign_source_2 = module_filename_obj;
         UPDATE_STRING_DICT0(moduledict_zmlogo, (Nuitka_StringObject *)const_str_plain___file__, tmp_assign_source_2);
     }
     // Frame without reuse.
-    frame_48e31868ad837fb0ae461c65d5d8c223 = MAKE_MODULE_FRAME(codeobj_48e31868ad837fb0ae461c65d5d8c223, module_zmlogo);
+    frame_c22b0971a8c7ea7daef6372d15d5272a = MAKE_MODULE_FRAME(codeobj_c22b0971a8c7ea7daef6372d15d5272a, module_zmlogo);
 
     // Push the new frame as the currently active one, and we should be exclusively
     // owning it.
-    pushFrameStack(frame_48e31868ad837fb0ae461c65d5d8c223);
-    assert(Py_REFCNT(frame_48e31868ad837fb0ae461c65d5d8c223) == 2);
+    pushFrameStack(frame_c22b0971a8c7ea7daef6372d15d5272a);
+    assert(Py_REFCNT(frame_c22b0971a8c7ea7daef6372d15d5272a) == 2);
 
     // Framed code:
     {
         PyObject *tmp_assattr_name_1;
         PyObject *tmp_assattr_target_1;
         PyObject *tmp_mvar_value_1;
-        tmp_assattr_name_1 = const_str_digest_960e524745b8b52713939d715f505614;
+        tmp_assattr_name_1 = module_filename_obj;
         tmp_mvar_value_1 = GET_STRING_DICT_VALUE(moduledict_zmlogo, (Nuitka_StringObject *)const_str_plain___spec__);
 
         if (unlikely(tmp_mvar_value_1 == NULL)) {
@@ -557,23 +557,23 @@ PyObject *modulecode_zmlogo(PyObject *module) {
 
     // Restore frame exception if necessary.
 #if 0
-    RESTORE_FRAME_EXCEPTION(frame_48e31868ad837fb0ae461c65d5d8c223);
+    RESTORE_FRAME_EXCEPTION(frame_c22b0971a8c7ea7daef6372d15d5272a);
 #endif
     popFrameStack();
 
-    assertFrameObject(frame_48e31868ad837fb0ae461c65d5d8c223);
+    assertFrameObject(frame_c22b0971a8c7ea7daef6372d15d5272a);
 
     goto frame_no_exception_1;
 
     frame_exception_exit_1:;
 #if 0
-    RESTORE_FRAME_EXCEPTION(frame_48e31868ad837fb0ae461c65d5d8c223);
+    RESTORE_FRAME_EXCEPTION(frame_c22b0971a8c7ea7daef6372d15d5272a);
 #endif
 
     if (exception_tb == NULL) {
-        exception_tb = MAKE_TRACEBACK(frame_48e31868ad837fb0ae461c65d5d8c223, exception_lineno);
-    } else if (exception_tb->tb_frame != &frame_48e31868ad837fb0ae461c65d5d8c223->m_frame) {
-        exception_tb = ADD_TRACEBACK(exception_tb, frame_48e31868ad837fb0ae461c65d5d8c223, exception_lineno);
+        exception_tb = MAKE_TRACEBACK(frame_c22b0971a8c7ea7daef6372d15d5272a, exception_lineno);
+    } else if (exception_tb->tb_frame != &frame_c22b0971a8c7ea7daef6372d15d5272a->m_frame) {
+        exception_tb = ADD_TRACEBACK(exception_tb, frame_c22b0971a8c7ea7daef6372d15d5272a, exception_lineno);
     }
 
     // Put the previous frame back on top.

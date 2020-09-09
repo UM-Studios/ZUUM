@@ -34,7 +34,7 @@ PyDictObject *moduledict_pywin32_bootstrap;
 static PyObject *const_str_plain_site_packages_dir;
 static PyObject *const_str_plain_isdir;
 static PyObject *const_str_plain_add_dll_directory;
-static PyObject *const_str_plain_environ;
+extern PyObject *const_str_plain_environ;
 extern PyObject *const_str_plain___spec__;
 extern PyObject *const_str_plain_replace;
 extern PyObject *const_str_plain___file__;
@@ -48,16 +48,16 @@ extern PyObject *const_str_plain_origin;
 static PyObject *const_str_plain_pathsep;
 extern PyObject *const_str_plain_os;
 static PyObject *const_str_plain_level3_up_dir;
-static PyObject *const_str_digest_2bd155896d565455483b7748cf371300;
 extern PyObject *const_tuple_empty;
 extern PyObject *const_str_plain_has_location;
 static PyObject *const_str_plain_getsitepackages;
 static PyObject *const_str_plain_PATH;
 static PyObject *const_str_digest_9a3b0e967c43f837dc20b90a85f344ca;
+extern PyObject *const_str_plain_join;
 extern PyObject *const_str_angle_lambda;
-static PyObject *const_str_plain_join;
 extern PyObject *const_str_plain_startswith;
 extern PyObject *const_str_empty;
+static PyObject *const_str_digest_1923fb90675533a3ad1bde983208e3ca;
 static PyObject *const_str_plain_dirname;
 extern PyObject *const_str_plain___doc__;
 extern PyObject *const_str_plain___cached__;
@@ -69,20 +69,18 @@ static bool constants_created = false;
 /* Function to create module private constants. */
 static void createModuleConstants(void) {
     const_str_plain_site_packages_dir = UNSTREAM_STRING_ASCII(&constant_bin[ 1883 ], 17, 1);
-    const_str_plain_isdir = UNSTREAM_STRING_ASCII(&constant_bin[ 8134 ], 5, 1);
-    const_str_plain_add_dll_directory = UNSTREAM_STRING_ASCII(&constant_bin[ 8139 ], 17, 1);
-    const_str_plain_environ = UNSTREAM_STRING_ASCII(&constant_bin[ 8156 ], 7, 1);
+    const_str_plain_isdir = UNSTREAM_STRING_ASCII(&constant_bin[ 8039 ], 5, 1);
+    const_str_plain_add_dll_directory = UNSTREAM_STRING_ASCII(&constant_bin[ 8044 ], 17, 1);
     const_str_plain_site_packages_dirs = UNSTREAM_STRING_ASCII(&constant_bin[ 1883 ], 18, 1);
     const_str_plain_pywin32_system32 = UNSTREAM_STRING_ASCII(&constant_bin[ 1962 ], 16, 1);
-    const_str_plain_insert = UNSTREAM_STRING_ASCII(&constant_bin[ 8163 ], 6, 1);
-    const_str_plain_pathsep = UNSTREAM_STRING_ASCII(&constant_bin[ 8169 ], 7, 1);
+    const_str_plain_insert = UNSTREAM_STRING_ASCII(&constant_bin[ 8061 ], 6, 1);
+    const_str_plain_pathsep = UNSTREAM_STRING_ASCII(&constant_bin[ 8067 ], 7, 1);
     const_str_plain_level3_up_dir = UNSTREAM_STRING_ASCII(&constant_bin[ 1848 ], 13, 1);
-    const_str_digest_2bd155896d565455483b7748cf371300 = UNSTREAM_STRING_ASCII(&constant_bin[ 8176 ], 102, 0);
-    const_str_plain_getsitepackages = UNSTREAM_STRING_ASCII(&constant_bin[ 8278 ], 15, 1);
-    const_str_plain_PATH = UNSTREAM_STRING_ASCII(&constant_bin[ 8293 ], 4, 1);
-    const_str_digest_9a3b0e967c43f837dc20b90a85f344ca = UNSTREAM_STRING_ASCII(&constant_bin[ 8297 ], 26, 0);
-    const_str_plain_join = UNSTREAM_STRING_ASCII(&constant_bin[ 2032 ], 4, 1);
-    const_str_plain_dirname = UNSTREAM_STRING_ASCII(&constant_bin[ 8323 ], 7, 1);
+    const_str_plain_getsitepackages = UNSTREAM_STRING_ASCII(&constant_bin[ 8074 ], 15, 1);
+    const_str_plain_PATH = UNSTREAM_STRING_ASCII(&constant_bin[ 8089 ], 4, 1);
+    const_str_digest_9a3b0e967c43f837dc20b90a85f344ca = UNSTREAM_STRING_ASCII(&constant_bin[ 8093 ], 26, 0);
+    const_str_digest_1923fb90675533a3ad1bde983208e3ca = UNSTREAM_STRING_ASCII(&constant_bin[ 8119 ], 20, 0);
+    const_str_plain_dirname = UNSTREAM_STRING_ASCII(&constant_bin[ 8139 ], 7, 1);
 
     constants_created = true;
 }
@@ -98,13 +96,13 @@ void checkModuleConstants_pywin32_bootstrap(void) {
 #endif
 
 // The module code objects.
-static PyCodeObject *codeobj_3000f79797e0c48f4149b4f6d0fab471;
-static PyCodeObject *codeobj_067e55ad56ab91157c67669f4d488f0a;
+static PyCodeObject *codeobj_5b117da5d03bf1544d963a18cbfac61f;
+static PyCodeObject *codeobj_51d7c56b8609f150e23c0faa7c624198;
 
 static void createModuleCodeObjects(void) {
-    module_filename_obj = const_str_digest_2bd155896d565455483b7748cf371300;
-    codeobj_3000f79797e0c48f4149b4f6d0fab471 = MAKE_CODEOBJECT(module_filename_obj, 20, CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE, const_str_angle_lambda, const_tuple_empty, 0, 0, 0);
-    codeobj_067e55ad56ab91157c67669f4d488f0a = MAKE_CODEOBJECT(module_filename_obj, 1, CO_NOFREE, const_str_digest_9a3b0e967c43f837dc20b90a85f344ca, const_tuple_empty, 0, 0, 0);
+    module_filename_obj = MAKE_RELATIVE_PATH(const_str_digest_1923fb90675533a3ad1bde983208e3ca);
+    codeobj_5b117da5d03bf1544d963a18cbfac61f = MAKE_CODEOBJECT(module_filename_obj, 20, CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE, const_str_angle_lambda, const_tuple_empty, 0, 0, 0);
+    codeobj_51d7c56b8609f150e23c0faa7c624198 = MAKE_CODEOBJECT(module_filename_obj, 1, CO_NOFREE, const_str_digest_9a3b0e967c43f837dc20b90a85f344ca, const_tuple_empty, 0, 0, 0);
 }
 
 // The module function declarations.
@@ -149,7 +147,7 @@ static PyObject *MAKE_FUNCTION_pywin32_bootstrap$$$function_1_lambda() {
 #if PYTHON_VERSION >= 300
         NULL,
 #endif
-        codeobj_3000f79797e0c48f4149b4f6d0fab471,
+        codeobj_5b117da5d03bf1544d963a18cbfac61f,
         NULL,
 #if PYTHON_VERSION >= 300
         NULL,
@@ -562,7 +560,7 @@ PyObject *modulecode_pywin32_bootstrap(PyObject *module) {
     // Temp variables if any
     PyObject *tmp_for_loop_1__for_iterator = NULL;
     PyObject *tmp_for_loop_1__iter_value = NULL;
-    struct Nuitka_FrameObject *frame_067e55ad56ab91157c67669f4d488f0a;
+    struct Nuitka_FrameObject *frame_51d7c56b8609f150e23c0faa7c624198;
     NUITKA_MAY_BE_UNUSED char const *type_description_1 = NULL;
     bool tmp_result;
     PyObject *exception_type = NULL;
@@ -584,23 +582,23 @@ PyObject *modulecode_pywin32_bootstrap(PyObject *module) {
     }
     {
         PyObject *tmp_assign_source_2;
-        tmp_assign_source_2 = const_str_digest_2bd155896d565455483b7748cf371300;
+        tmp_assign_source_2 = module_filename_obj;
         UPDATE_STRING_DICT0(moduledict_pywin32_bootstrap, (Nuitka_StringObject *)const_str_plain___file__, tmp_assign_source_2);
     }
     // Frame without reuse.
-    frame_067e55ad56ab91157c67669f4d488f0a = MAKE_MODULE_FRAME(codeobj_067e55ad56ab91157c67669f4d488f0a, module_pywin32_bootstrap);
+    frame_51d7c56b8609f150e23c0faa7c624198 = MAKE_MODULE_FRAME(codeobj_51d7c56b8609f150e23c0faa7c624198, module_pywin32_bootstrap);
 
     // Push the new frame as the currently active one, and we should be exclusively
     // owning it.
-    pushFrameStack(frame_067e55ad56ab91157c67669f4d488f0a);
-    assert(Py_REFCNT(frame_067e55ad56ab91157c67669f4d488f0a) == 2);
+    pushFrameStack(frame_51d7c56b8609f150e23c0faa7c624198);
+    assert(Py_REFCNT(frame_51d7c56b8609f150e23c0faa7c624198) == 2);
 
     // Framed code:
     {
         PyObject *tmp_assattr_name_1;
         PyObject *tmp_assattr_target_1;
         PyObject *tmp_mvar_value_1;
-        tmp_assattr_name_1 = const_str_digest_2bd155896d565455483b7748cf371300;
+        tmp_assattr_name_1 = module_filename_obj;
         tmp_mvar_value_1 = GET_STRING_DICT_VALUE(moduledict_pywin32_bootstrap, (Nuitka_StringObject *)const_str_plain___spec__);
 
         if (unlikely(tmp_mvar_value_1 == NULL)) {
@@ -663,7 +661,7 @@ PyObject *modulecode_pywin32_bootstrap(PyObject *module) {
         tmp_locals_name_1 = Py_None;
         tmp_fromlist_name_1 = Py_None;
         tmp_level_name_1 = const_int_0;
-        frame_067e55ad56ab91157c67669f4d488f0a->m_frame.f_lineno = 9;
+        frame_51d7c56b8609f150e23c0faa7c624198->m_frame.f_lineno = 9;
         tmp_assign_source_4 = IMPORT_MODULE5(tmp_name_name_1, tmp_globals_name_1, tmp_locals_name_1, tmp_fromlist_name_1, tmp_level_name_1);
         if (tmp_assign_source_4 == NULL) {
             assert(ERROR_OCCURRED());
@@ -689,7 +687,7 @@ PyObject *modulecode_pywin32_bootstrap(PyObject *module) {
         tmp_locals_name_2 = Py_None;
         tmp_fromlist_name_2 = Py_None;
         tmp_level_name_2 = const_int_0;
-        frame_067e55ad56ab91157c67669f4d488f0a->m_frame.f_lineno = 10;
+        frame_51d7c56b8609f150e23c0faa7c624198->m_frame.f_lineno = 10;
         tmp_assign_source_5 = IMPORT_MODULE5(tmp_name_name_2, tmp_globals_name_2, tmp_locals_name_2, tmp_fromlist_name_2, tmp_level_name_2);
         if (tmp_assign_source_5 == NULL) {
             assert(ERROR_OCCURRED());
@@ -798,7 +796,7 @@ PyObject *modulecode_pywin32_bootstrap(PyObject *module) {
         }
 
         tmp_args_element_name_3 = tmp_mvar_value_7;
-        frame_067e55ad56ab91157c67669f4d488f0a->m_frame.f_lineno = 18;
+        frame_51d7c56b8609f150e23c0faa7c624198->m_frame.f_lineno = 18;
         tmp_args_element_name_2 = CALL_FUNCTION_WITH_SINGLE_ARG(tmp_called_name_3, tmp_args_element_name_3);
         if (tmp_args_element_name_2 == NULL) {
             assert(ERROR_OCCURRED());
@@ -810,7 +808,7 @@ PyObject *modulecode_pywin32_bootstrap(PyObject *module) {
 
             goto frame_exception_exit_1;
         }
-        frame_067e55ad56ab91157c67669f4d488f0a->m_frame.f_lineno = 18;
+        frame_51d7c56b8609f150e23c0faa7c624198->m_frame.f_lineno = 18;
         tmp_args_element_name_1 = CALL_FUNCTION_WITH_SINGLE_ARG(tmp_called_name_2, tmp_args_element_name_2);
         Py_DECREF(tmp_args_element_name_2);
         if (tmp_args_element_name_1 == NULL) {
@@ -823,7 +821,7 @@ PyObject *modulecode_pywin32_bootstrap(PyObject *module) {
 
             goto frame_exception_exit_1;
         }
-        frame_067e55ad56ab91157c67669f4d488f0a->m_frame.f_lineno = 18;
+        frame_51d7c56b8609f150e23c0faa7c624198->m_frame.f_lineno = 18;
         tmp_assign_source_7 = CALL_FUNCTION_WITH_SINGLE_ARG(tmp_called_name_1, tmp_args_element_name_1);
         Py_DECREF(tmp_args_element_name_1);
         if (tmp_assign_source_7 == NULL) {
@@ -883,7 +881,7 @@ PyObject *modulecode_pywin32_bootstrap(PyObject *module) {
 
             goto frame_exception_exit_1;
         }
-        frame_067e55ad56ab91157c67669f4d488f0a->m_frame.f_lineno = 20;
+        frame_51d7c56b8609f150e23c0faa7c624198->m_frame.f_lineno = 20;
         tmp_assign_source_8 = CALL_FUNCTION_NO_ARGS(tmp_called_name_4);
         Py_DECREF(tmp_called_name_4);
         if (tmp_assign_source_8 == NULL) {
@@ -1014,7 +1012,7 @@ PyObject *modulecode_pywin32_bootstrap(PyObject *module) {
         }
 
         tmp_args_element_name_5 = tmp_mvar_value_12;
-        frame_067e55ad56ab91157c67669f4d488f0a->m_frame.f_lineno = 22;
+        frame_51d7c56b8609f150e23c0faa7c624198->m_frame.f_lineno = 22;
         {
             PyObject *call_args[] = {tmp_args_element_name_4, tmp_args_element_name_5};
             tmp_call_result_1 = CALL_FUNCTION_WITH_ARGS2(tmp_called_name_5, call_args);
@@ -1182,7 +1180,7 @@ PyObject *modulecode_pywin32_bootstrap(PyObject *module) {
 
         tmp_args_element_name_6 = tmp_mvar_value_15;
         tmp_args_element_name_7 = const_str_plain_pywin32_system32;
-        frame_067e55ad56ab91157c67669f4d488f0a->m_frame.f_lineno = 25;
+        frame_51d7c56b8609f150e23c0faa7c624198->m_frame.f_lineno = 25;
         {
             PyObject *call_args[] = {tmp_args_element_name_6, tmp_args_element_name_7};
             tmp_assign_source_12 = CALL_FUNCTION_WITH_ARGS2(tmp_called_name_6, call_args);
@@ -1276,7 +1274,7 @@ PyObject *modulecode_pywin32_bootstrap(PyObject *module) {
         }
 
         tmp_args_element_name_8 = tmp_mvar_value_17;
-        frame_067e55ad56ab91157c67669f4d488f0a->m_frame.f_lineno = 26;
+        frame_51d7c56b8609f150e23c0faa7c624198->m_frame.f_lineno = 26;
         tmp_call_result_2 = CALL_FUNCTION_WITH_SINGLE_ARG(tmp_called_name_7, tmp_args_element_name_8);
         Py_DECREF(tmp_called_name_7);
         if (tmp_call_result_2 == NULL) {
@@ -1415,7 +1413,7 @@ PyObject *modulecode_pywin32_bootstrap(PyObject *module) {
         }
 
         tmp_args_element_name_9 = tmp_mvar_value_20;
-        frame_067e55ad56ab91157c67669f4d488f0a->m_frame.f_lineno = 28;
+        frame_51d7c56b8609f150e23c0faa7c624198->m_frame.f_lineno = 28;
         tmp_call_result_3 = CALL_FUNCTION_WITH_SINGLE_ARG(tmp_called_name_8, tmp_args_element_name_9);
         Py_DECREF(tmp_called_name_8);
         if (tmp_call_result_3 == NULL) {
@@ -1521,7 +1519,7 @@ PyObject *modulecode_pywin32_bootstrap(PyObject *module) {
         }
 
         tmp_args_element_name_10 = tmp_mvar_value_22;
-        frame_067e55ad56ab91157c67669f4d488f0a->m_frame.f_lineno = 31;
+        frame_51d7c56b8609f150e23c0faa7c624198->m_frame.f_lineno = 31;
         tmp_operand_name_1 = CALL_FUNCTION_WITH_SINGLE_ARG(tmp_called_name_9, tmp_args_element_name_10);
         Py_DECREF(tmp_called_name_9);
         if (tmp_operand_name_1 == NULL) {
@@ -1697,7 +1695,7 @@ PyObject *modulecode_pywin32_bootstrap(PyObject *module) {
             goto try_except_handler_1;
         }
         tmp_args_element_name_12 = const_str_empty;
-        frame_067e55ad56ab91157c67669f4d488f0a->m_frame.f_lineno = 32;
+        frame_51d7c56b8609f150e23c0faa7c624198->m_frame.f_lineno = 32;
         {
             PyObject *call_args[] = {tmp_args_element_name_11, tmp_args_element_name_12};
             tmp_ass_subvalue_1 = CALL_FUNCTION_WITH_ARGS2(tmp_called_name_10, call_args);
@@ -1996,23 +1994,23 @@ PyObject *modulecode_pywin32_bootstrap(PyObject *module) {
 
     // Restore frame exception if necessary.
 #if 0
-    RESTORE_FRAME_EXCEPTION(frame_067e55ad56ab91157c67669f4d488f0a);
+    RESTORE_FRAME_EXCEPTION(frame_51d7c56b8609f150e23c0faa7c624198);
 #endif
     popFrameStack();
 
-    assertFrameObject(frame_067e55ad56ab91157c67669f4d488f0a);
+    assertFrameObject(frame_51d7c56b8609f150e23c0faa7c624198);
 
     goto frame_no_exception_1;
 
     frame_exception_exit_1:;
 #if 0
-    RESTORE_FRAME_EXCEPTION(frame_067e55ad56ab91157c67669f4d488f0a);
+    RESTORE_FRAME_EXCEPTION(frame_51d7c56b8609f150e23c0faa7c624198);
 #endif
 
     if (exception_tb == NULL) {
-        exception_tb = MAKE_TRACEBACK(frame_067e55ad56ab91157c67669f4d488f0a, exception_lineno);
-    } else if (exception_tb->tb_frame != &frame_067e55ad56ab91157c67669f4d488f0a->m_frame) {
-        exception_tb = ADD_TRACEBACK(exception_tb, frame_067e55ad56ab91157c67669f4d488f0a, exception_lineno);
+        exception_tb = MAKE_TRACEBACK(frame_51d7c56b8609f150e23c0faa7c624198, exception_lineno);
+    } else if (exception_tb->tb_frame != &frame_51d7c56b8609f150e23c0faa7c624198->m_frame) {
+        exception_tb = ADD_TRACEBACK(exception_tb, frame_51d7c56b8609f150e23c0faa7c624198, exception_lineno);
     }
 
     // Put the previous frame back on top.
