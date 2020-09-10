@@ -11,3 +11,5 @@ env/
 tempCodeRunnerFile.*
 *.xml
 test*
+*.build
+*.dist
