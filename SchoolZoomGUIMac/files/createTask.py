@@ -54,7 +54,7 @@ class Task():
 
   def add_task(self):
     all_tasks = self.get_all_tasks()
-    print(all_tasks)
+    # print(all_tasks)
     all_tasks.append(self.reprJSON())
     with open(f'{str(Path.home())}/.createzoom/tasks.json', 'w') as f:
       json.dump(all_tasks, f, cls = TaskEncoder)
@@ -68,7 +68,7 @@ class Task():
     os.system('rm mycron; touch mycron')
     for cron in crons:
       if cron != '' and cron != '\n':
-        print(cron)
+        # print(cron)
         os.system(f'echo "{cron}" >> mycron')
     os.system('crontab mycron; rm mycron')
     all_tasks = self.get_all_tasks()
