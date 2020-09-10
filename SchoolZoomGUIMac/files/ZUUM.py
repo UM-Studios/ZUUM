@@ -5,6 +5,9 @@ from tkinter import messagebox
 import re
 from fullTask import *
 import datetime
+import os
+import tkinter as tk
+import sys
 
 #zoompath = r"%APPDATA%\Zoom\bin\Zoom.exe"
 
@@ -12,7 +15,6 @@ window = Tk()
 window.title("Zoom Meeting Manager")
 window.geometry("880x400")
 #window.resizable(False, True)
-
 titlefont = font.Font(family='Arial', size=10, underline=1)
 
 class MainWindow:

@@ -47,9 +47,9 @@ class FullTask():
 
   def get_next_trigger(self):
     ahead = []
+    min = 0
     for i in range(len(self.triggers)):
-      min = 0
-      nextday = datetime.datetime.now() + datetime.timedelta((day_to_num[self.triggers[i].day] - 1 - datetime.datetime.now().weekday())%7)
+      nextday = datetime.datetime.now() + datetime.timedelta((self.weekdays[self.triggers[i].day] - datetime.datetime.now().weekday())%7)
       nextdatetime = datetime.datetime.combine(nextday, self.triggers[i].time.time())
       ahead.append((nextdatetime - datetime.datetime.now()) % datetime.timedelta(days=7))
       if ahead[i] < ahead[min]:
