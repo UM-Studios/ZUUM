@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <form method="POST" action="{{ url_for('new_meeting') }}">
+        <label>Name: </label>
+        <input type="text" name="meeting_name">
+        <br>
+        <label>Link: </label>
+        <input type="text" name="meeting_link">
+        <input type="submit" value="Add Task">
+    </form>
+{% endblock content %}

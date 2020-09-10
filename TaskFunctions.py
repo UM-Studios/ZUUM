@@ -3,6 +3,7 @@ import datetime
 import re
 import os
 import xml.etree.ElementTree as ET
+import hashlib
 
 zoompath = r"%APPDATA%\Zoom\bin\Zoom.exe"
 
@@ -13,6 +14,14 @@ class Trigger:
     def __init__(self, day, time=datetime.datetime.now()):
         self.day = day
         self.time = time
+    def __repr__(self):
+        ampm = "AM" if self.time.hour < 12 else "PM"
+        hour = self.time.hour
+        if hour == 0:
+            hour = 12
+        elif hour > 12:
+            hour -= 12
+        return f"Every {self.day} at {hour}:{self.time.minute} {ampm}"
 
 class Task:
     def __init__(self, name, link, triggers = []):
@@ -28,6 +37,7 @@ class Task:
             m = re.compile(r"()()()").match('')
         self.args = [str(i or '') for i in m.groups()]
         self.triggers = triggers
+        self.id = hashlib.sha224(self.get_task_name().encode('utf-8')).hexdigest()
         self.userid = re.compile(r"S-1-5-21-(\d+-?)+").search(cmd_command("whoami /user /fo csv /nh")[0].decode("utf-8")).group(0)
     def add_trigger(self, trigger):
         self.triggers.append(trigger)
@@ -38,13 +48,13 @@ class Task:
     def set_link(self, link):
         if re.match(self.linkre, link):
             m = re.match(self.linkre, link)
-        else: 
+        else:
             raise ValueError("Invalid Link")
         self.args = [str(i or '') for i in m.groups()]
     def set_args(self, args):
         if re.match(self.argsre, args):
             m = re.match(self.argsre, args)
-        else: 
+        else:
             raise ValueError("Invalid Argument")
         self.args = [str(i or '') for i in m.groups()]
     def replace_trigger(self, index, new):
@@ -103,7 +113,7 @@ def write_XML(tree, install=False, filename='task', taskname='Unnamed'):
     if install:
         i = 0
         ext = ''
-        while True:    
+        while True:
             if cmd_command(f"schtasks /create /XML \"{filename}.xml\" /tn \"ZoomJoin\\{taskname}{ext}\"")[0].decode("utf-8").startswith('SUCCESS'):
                 break
             i += 1
@@ -138,13 +148,14 @@ def delete_task(task):
 
 #______________testing______________
 if __name__ == "__main__":
-    ns = {'ns0': 'http://schemas.microsoft.com/windows/2004/02/mit/task'}
-    days = [Trigger("Friday", datetime.datetime(year=2020, month=9, day=9, hour=10)), Trigger("Wednesday", datetime.datetime(year=2020, month=9, day=9, hour=11))]
-    hello = Task('hello where', 'https://us02web.zoom.us/w/88392313240?tk=E5YZhz_cGRVZvNoUcBRrrxatyH6E5xI66QVzcMRC7O4.DQIAAAAUlJepmBZ0RW9LMFlWVlNxU0tmYlRMOVRZV1BRAAAAAAAAAAAAAAAAAAAAAAAAAAAA&pwd=Z1R5cXQ4K0M2UHhFOEFrbm5xazBHUT09', days)
-    list = get_task_list()
-    print(f"{list[5].get_next_trigger().time.time().strftime('%I:%M:%S %p').lstrip('0')} {list[5].get_next_trigger().day}")
+    # ns = {'ns0': 'http://schemas.microsoft.com/windows/2004/02/mit/task'}
+    # days = [Trigger("Friday", datetime.datetime(year=2020, month=9, day=9, hour=10)), Trigger("Wednesday", datetime.datetime(year=2020, month=9, day=9, hour=11))]
+    # hello = Task('hello where', 'https://us02web.zoom.us/w/88392313240?tk=E5YZhz_cGRVZvNoUcBRrrxatyH6E5xI66QVzcMRC7O4.DQIAAAAUlJepmBZ0RW9LMFlWVlNxU0tmYlRMOVRZV1BRAAAAAAAAAAAAAAAAAAAAAAAAAAAA&pwd=Z1R5cXQ4K0M2UHhFOEFrbm5xazBHUT09', days)
+    # list = get_task_list()
+    # print(f"{list[5].get_next_trigger().time.time().strftime('%I:%M:%S %p').lstrip('0')} {list[5].get_next_trigger().day}")
     #print(get_task_list())
-
+    for i in get_task_list():
+        print(i.get_task_name())
     #write_XML(build_XML(create_XML_tree('task'), hello, zoompath), filename='testy')
 
     #print(get_task_list()[2].triggers[0].day)
@@ -153,8 +164,8 @@ if __name__ == "__main__":
 
     #print(get_task_list().getroot()[0][4][0][1].text)
     #print(get_task_list().getroot()[0][4][0][1].text)
-    
-    
+
+
     #run_task(list[0])
 
     #print(list[0].get_task_name())
