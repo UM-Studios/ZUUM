@@ -1,0 +1,12 @@
+;The comment below contains SFX script commands
+
+Path=ZUUM
+Setup=CreateShortcut.bat
+Setup=ZUUM.exe
+SetupCode=0
+Overwrite=1
+Title=Install ZUUM
+Text
+{
+Installs ZUUM. To uninstall, simply delete the destination folder. Make sure to remove all meetings through the app unless you want to continue auto-joining the meetings. A shortcut will be created on the desktop.
+}
