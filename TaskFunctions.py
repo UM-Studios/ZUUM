@@ -21,7 +21,7 @@ class Trigger:
             hour = 12
         elif hour > 12:
             hour -= 12
-        return f"Every {self.day} at {hour}:{self.time.minute} {ampm}"
+        return f"{self.day} at {hour}:{self.time.minute} {ampm}"
 
 class Task:
     def __init__(self, name, link, triggers = []):
@@ -73,6 +73,13 @@ class Task:
             if ahead[i] < ahead[min]:
                 min = i
         return self.triggers[min] if self.triggers else ''
+    def run(self):
+        cmd_command(f'schtasks /run /tn "{self.name}"')
+    def delete(self):
+        cmd_command(f'schtasks /delete /tn "{self.name}" /F')
+    def commit_changes(self):
+        self.delete()
+        return write_XML(build_XML(create_XML_tree('task'), self, zoompath), install=True, filename='uitest', taskname=self.get_task_name())
 
 def name_validate(name):
     return bool(re.compile(r'^(?!(?:COM[0-9]|CON|LPT[0-9]|NUL|PRN|AUX|com[0-9]|con|lpt[0-9]|nul|prn|aux)|\s|[\.]{2,})[^\\\/:*"?<>|]{1,254}(?<![\s\.])$').match(name))
@@ -139,12 +146,6 @@ def get_task_list():
 #def get_task_XML():
 #    root = ET.fromstring(('<?xml version="1.0" encoding="UTF-16"?>'+cmd_command(f"schtasks /query /tn \\ZoomJoin\\ /xml")[0].decode("utf-8").replace('<?xml version="1.0" encoding="UTF-16"?>', '')).encode('utf-16-be'))
 #    return ET.ElementTree(root)
-
-def run_task(task):
-    cmd_command(f'schtasks /run /tn "{task.name}"')
-
-def delete_task(task):
-    cmd_command(f'schtasks /delete /tn "{task.name}" /F')
 
 #______________testing______________
 if __name__ == "__main__":
