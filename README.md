@@ -15,7 +15,7 @@ Simply download the installer and run it. ZUUM requires administrator privileges
 Download the dmg and open it. Drag the ZUUM application to your applications folder and run it. You are then free to unmount and delete the dmg.
 
 # Compatibility
-ZUUM is compatible with both Windows and MacOS (On 10.15 Catalina)! A Linux version may be in the workings, so stay tuned!
+ZUUM is compatible with both Windows and MacOS (On 10.15 Catalina)! A Linux version may be in the workings, so stay tuned! We will also be adding support for older Macs in the next update.
 
 # Download
 Check the releases section on the right -->
