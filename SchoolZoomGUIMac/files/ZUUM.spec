@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['ZUUM.py'],
-             pathex=['/Users/colinzhao/src/UMStudiosPublic/SchoolZoomGUIMac/files'],
+             pathex=['/Users/colinzhao/src/ZUUM/SchoolZoomGUIMac/files'],
              binaries=[],
              datas=[],
              hiddenimports=['tkinter'],
@@ -30,4 +30,8 @@ exe = EXE(pyz,
           upx=True,
           upx_exclude=[],
           runtime_tmpdir=None,
-          console=True , icon='zmlogo.icns')
+          console=False , icon='zmlogo.icns')
+app = BUNDLE(exe,
+             name='ZUUM.app',
+             icon='zmlogo.icns',
+             bundle_identifier=None)
