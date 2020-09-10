@@ -1,0 +1,13 @@
+**/.DS_STORE
+**/.vscode
+**/__pycache__
+**/package-lock.json
+**/node_modules
+/venv
+/env
+env/
+.env
+*.pyc
+tempCodeRunnerFile.*
+*.xml
+test*
