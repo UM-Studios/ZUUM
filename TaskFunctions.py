@@ -24,7 +24,7 @@ class Trigger:
         return f"{self.day} at {hour}:{self.time.minute} {ampm}"
 
 class Task:
-    def __init__(self, name, link, triggers = []):
+    def __init__(self, name, link, triggers = [], enabled=True):
         self.linkre = re.compile(r"^(?:(?:https?:\/\/)?(?:us02web\.)?zoom\.us\/[jw]\/)(\d+)\??(tk=[a-zA-Z0-9_.-]+)?&?(pwd=[a-zA-Z0-9]+)?$")
         self.argsre = re.compile(r'"(?:--url=)?zoommtg:\/\/zoom.us\/join\?action=join(?:&confno=)?(\d+)&?(tk=[a-zA-Z0-9_.-]+)?&?(pwd=[a-zA-Z0-9]+)?"')
         self.weekdays = {"Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3, "Friday": 4, "Saturday": 5, "Sunday": 6, }
@@ -37,6 +37,7 @@ class Task:
             m = re.compile(r"()()()").match('')
         self.args = [str(i or '') for i in m.groups()]
         self.triggers = triggers
+        self.enabled = enabled
         self.id = hashlib.sha224(self.get_task_name().encode('utf-8')).hexdigest()
         self.userid = re.compile(r"S-1-5-21-(\d+-?)+").search(cmd_command("whoami /user /fo csv /nh")[0].decode("utf-8")).group(0)
     def add_trigger(self, trigger):
@@ -104,6 +105,8 @@ def build_XML(tree, task, path, author="CREATEZOOMTASK",):
 
     tree.getroot().find("./ns0:Principals/ns0:Principal/ns0:UserId", ns).text = task.userid
 
+    tree.getroot().find("./ns0:Settings/ns0:Enabled", ns).text = "true" if task.enabled else "false"
+
     root = tree.getroot().find("./ns0:Actions/ns0:Exec", ns)
     root.find("./ns0:Command", ns).text = path
     root.find("./ns0:Arguments", ns).text = task.get_args()
@@ -111,7 +114,7 @@ def build_XML(tree, task, path, author="CREATEZOOMTASK",):
 
 def create_XML_tree(type):
     if type == 'task':
-        return ET.ElementTree(ET.fromstring('<?xml version="1.0" encoding="UTF-16"?>\n<Task version="1.4" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">\n  <RegistrationInfo>\n    <Date></Date>\n    <Author></Author>\n    <URI></URI>\n  </RegistrationInfo>\n  <Triggers>\n      </Triggers>\n  <Principals>\n    <Principal id="Author">\n      <UserId></UserId>\n      <LogonType>InteractiveToken</LogonType>\n      <RunLevel>LeastPrivilege</RunLevel>\n    </Principal>\n  </Principals>\n  <Settings>\n    <MultipleInstancesPolicy>StopExisting</MultipleInstancesPolicy>\n    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>\n    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>\n    <AllowHardTerminate>true</AllowHardTerminate>\n    <StartWhenAvailable>false</StartWhenAvailable>\n    <RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>\n    <IdleSettings>\n      <StopOnIdleEnd>true</StopOnIdleEnd>\n      <RestartOnIdle>false</RestartOnIdle>\n    </IdleSettings>\n    <AllowStartOnDemand>true</AllowStartOnDemand>\n    <Enabled>true</Enabled>\n    <Hidden>false</Hidden>\n    <RunOnlyIfIdle>false</RunOnlyIfIdle>\n    <DisallowStartOnRemoteAppSession>false</DisallowStartOnRemoteAppSession>\n    <UseUnifiedSchedulingEngine>true</UseUnifiedSchedulingEngine>\n    <WakeToRun>false</WakeToRun>\n    <ExecutionTimeLimit>PT1H</ExecutionTimeLimit>\n    <Priority>7</Priority>\n  </Settings>\n  <Actions Context="Author">\n    <Exec>\n      <Command></Command>\n      <Arguments></Arguments>\n    </Exec>\n  </Actions>\n</Task>'.encode('utf-16-be')))
+        return ET.ElementTree(ET.fromstring('<?xml version="1.0" encoding="UTF-16"?>\n<Task version="1.4" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">\n  <RegistrationInfo>\n    <Date></Date>\n    <Author></Author>\n    <URI></URI>\n  </RegistrationInfo>\n  <Triggers>\n      </Triggers>\n  <Principals>\n    <Principal id="Author">\n      <UserId></UserId>\n      <LogonType>InteractiveToken</LogonType>\n      <RunLevel>LeastPrivilege</RunLevel>\n    </Principal>\n  </Principals>\n  <Settings>\n    <MultipleInstancesPolicy>StopExisting</MultipleInstancesPolicy>\n    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>\n    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>\n    <AllowHardTerminate>true</AllowHardTerminate>\n    <StartWhenAvailable>false</StartWhenAvailable>\n    <RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>\n    <IdleSettings>\n      <StopOnIdleEnd>true</StopOnIdleEnd>\n      <RestartOnIdle>false</RestartOnIdle>\n    </IdleSettings>\n    <AllowStartOnDemand>true</AllowStartOnDemand>\n    <Enabled></Enabled>\n    <Hidden>false</Hidden>\n    <RunOnlyIfIdle>false</RunOnlyIfIdle>\n    <DisallowStartOnRemoteAppSession>false</DisallowStartOnRemoteAppSession>\n    <UseUnifiedSchedulingEngine>true</UseUnifiedSchedulingEngine>\n    <WakeToRun>false</WakeToRun>\n    <ExecutionTimeLimit>PT1H</ExecutionTimeLimit>\n    <Priority>7</Priority>\n  </Settings>\n  <Actions Context="Author">\n    <Exec>\n      <Command></Command>\n      <Arguments></Arguments>\n    </Exec>\n  </Actions>\n</Task>'.encode('utf-16-be')))
     if type == 'trigger':
         return ET.ElementTree(ET.fromstring('<?xml version="1.0" encoding="UTF-16"?>\n<CalendarTrigger xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">\n    <StartBoundary></StartBoundary>\n    <Enabled>true</Enabled>\n    <ScheduleByWeek>\n        <DaysOfWeek />\n        <WeeksInterval>1</WeeksInterval>\n    </ScheduleByWeek>\n</CalendarTrigger>\n'.encode('utf-16-be')))
 
@@ -140,7 +143,7 @@ def get_task_list():
             triggers = []
             for j in range(len(root[i][3])):
                 triggers.append(Trigger(root[i].find("./ns0:Triggers", ns)[j].find("./ns0:ScheduleByWeek/ns0:DaysOfWeek", ns)[0].tag.split('}')[1], datetime.datetime.fromisoformat(root[i].find("./ns0:Triggers", ns)[j].find("./ns0:StartBoundary", ns).text)))
-            tlist.append(Task(root[i].find("./ns0:RegistrationInfo/ns0:URI", ns).text, root[i].find("./ns0:Actions/ns0:Exec/ns0:Arguments", ns).text, triggers))
+            tlist.append(Task(root[i].find("./ns0:RegistrationInfo/ns0:URI", ns).text, root[i].find("./ns0:Actions/ns0:Exec/ns0:Arguments", ns).text, triggers, True if root[i].find("./ns0:Settings/ns0:Enabled", ns) == None or root[i].find("./ns0:Settings/ns0:Enabled", ns) == 'true' else False))
     return tlist
 
 #def get_task_XML():
@@ -156,7 +159,9 @@ if __name__ == "__main__":
     # print(f"{list[5].get_next_trigger().time.time().strftime('%I:%M:%S %p').lstrip('0')} {list[5].get_next_trigger().day}")
     #print(get_task_list())
     for i in get_task_list():
-        print(i.get_task_name())
+        #print(i.enabled)
+        i.enabled = True
+        i.commit_changes()
     #write_XML(build_XML(create_XML_tree('task'), hello, zoompath), filename='testy')
 
     #print(get_task_list()[2].triggers[0].day)
