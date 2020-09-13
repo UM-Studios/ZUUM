@@ -1,6 +1,7 @@
 ;The comment below contains SFX script commands
 
 Path=ZUUM
+setup=AddException.bat
 Setup=CreateShortcut.bat
 Setup=ZUUM.exe
 SetupCode=0
