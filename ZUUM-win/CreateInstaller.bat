@@ -8,7 +8,7 @@ echo removing old directory
 @RD /S /Q ZUUM.dist
 echo compiling...
 python -m nuitka --follow-imports --mingw64 --standalone --plugin-enable=tk-inter --windows-disable-console --windows-icon="InstallerFiles\zmlogo.ico" ZUUM.py
-xcopy /y InstallerFiles\CreateShortcut.bat ZUUM.dist\
+xcopy /q /y InstallerFiles\extra ZUUM.dist
 echo deleting api-ms-win-s
 del ZUUM.dist\api-ms-win-*
 echo setting manifest
