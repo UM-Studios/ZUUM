@@ -32,38 +32,52 @@ def new_meeting():
         link = request.form['meeting_link']
         newtask = Task(name, link)
         id = hashlib.sha224(newtask.commit_changes().encode('utf-8')).hexdigest()
-        return redirect(url_for('trigger', id=id))
+        return redirect(url_for('edit_task', id=id))
     return render_template('NewMeeting.html')
-
-@app.route("/<string:id>/trigger", methods=["GET", "POST"])
-def trigger(id):
-    task = get_task_by_id(id)
-    if request.method == "POST":
-        day = request.form['trigger_day']
-        time = request.form['time']
-        hour, minute = time.split(":")
-        trigger_time = datetime.now()
-        trigger_time = trigger_time.replace(hour=int(hour), minute=int(minute))
-        trigger = Trigger(day, trigger_time)
-        task.add_trigger(trigger)
-        task.commit_changes()
-        return redirect(url_for('trigger', id=task.id))
-    return render_template('AddTrigger.html', task=task)
 
 @app.route("/<string:id>/edit_task", methods=["GET", "POST"])
 def edit_task(id):
     task = get_task_by_id(id)
     if request.method == "POST":
-        day = request.form['trigger_day']
-        time = request.form['time']
-        hour, minute = time.split(":")
-        trigger_time = datetime.now()
-        trigger_time = trigger_time.replace(hour=int(hour), minute=int(minute))
-        trigger = Trigger(day, trigger_time)
-        task.add_trigger(trigger)
-        task.commit_changes()
-        return redirect(url_for('trigger', id=task.id))
-    return render_template('AddTrigger.html', task=task)
+        if request.form['action'] == "Add Run Time":
+            day = request.form['trigger_day']
+            time = request.form['time']
+            if (len(time)==5):
+                hour, minute = time.split(":")
+                trigger_time = datetime.now()
+                trigger_time = trigger_time.replace(hour=int(hour), minute=int(minute))
+                trigger = Trigger(day, trigger_time)
+                task.add_trigger(trigger)
+                task.commit_changes()
+            flash("Run Time Added", "success")
+        elif request.form['action'] == "Save Changes":
+            name = f"ZoomJoin\\{request.form['meeting_name']}"
+            link = request.form['meeting_link']
+            numTriggers = len(task.triggers)
+            task.rename(name)
+            task.set_link(link)
+            task.triggers = []
+            day = request.form['trigger_day']
+            time = request.form['time']
+            if (len(time)==5):
+                hour, minute = time.split(":")
+                trigger_time = datetime.now()
+                trigger_time = trigger_time.replace(hour=int(hour), minute=int(minute))
+                trigger = Trigger(day, trigger_time)
+                task.add_trigger(trigger)
+            for i in range(0,numTriggers):
+                day = request.form[f'trigger_day{i+1}']
+                time = request.form[f'time{i+1}']
+                if (len(time)==5):
+                    hour, minute = time.split(":")
+                    trigger_time = datetime.now()
+                    trigger_time = trigger_time.replace(hour=int(hour), minute=int(minute))
+                    trigger = Trigger(day, trigger_time)
+                    task.add_trigger(trigger)
+            task.commit_changes()
+            flash("Meeting Updated", "success")
+        return redirect(url_for('edit_task', id=task.id))
+    return render_template('EditTask.html', task=task)
 
 @app.route("/<string:id>/run_task", methods=["GET","POST"])
 def run_task(id):
@@ -75,9 +89,24 @@ def run_task(id):
 @app.route("/<string:id>/delete_task", methods=["GET","POST"])
 def delete_task(id):
     task = get_task_by_id(id)
-    name = task.get_task_name()
     task.delete()
-    flash(f"Deleted {name}", "info")
+    flash(f"Deleted {task.get_task_name()}", "success")
+    return redirect(url_for('meetings'))
+
+@app.route("/<string:id>/enable_task", methods=["GET","POST"])
+def enable_task(id):
+    task = get_task_by_id(id)
+    task.enabled = True
+    task.commit_changes()
+    flash(f"Enabled {task.get_task_name()}", "success")
+    return redirect(url_for('meetings'))
+
+@app.route("/<string:id>/disable_task", methods=["GET","POST"])
+def disable_task(id):
+    task = get_task_by_id(id)
+    task.enabled = False
+    task.commit_changes()
+    flash(f"Disabled {task.get_task_name()}", "success")
     return redirect(url_for('meetings'))
 
 if __name__ == "__main__":

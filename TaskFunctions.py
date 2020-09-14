@@ -21,7 +21,9 @@ class Trigger:
             hour = 12
         elif hour > 12:
             hour -= 12
-        return f"{self.day} at {hour}:{self.time.minute} {ampm}"
+        return f"{self.day} at {hour}:{'' if self.time.minute>9 else '0'}{self.time.minute} {ampm}"
+    def formatted_time(self):
+        return f"{'' if self.time.hour>9 else '0'}{self.time.hour}:{'' if self.time.minute>9 else '0'}{self.time.minute}"
 
 class Task:
     def __init__(self, name, link, triggers = [], enabled=True):

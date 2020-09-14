@@ -4,6 +4,7 @@
 <table class="table table-striped table-bordered">
     <thead>
       <tr>
+        <th scope="col">Status</th>
         <th scope="col">Name</th>
         <th scope="col">Link</th>
         <th scope="col">Run Times</th>
@@ -14,10 +15,20 @@
     <tbody>
         {% for meeting in meetings %}
             <tr class="clickable" onclick="window.location='/{{ meeting.id }}/edit_task';">
+                <td>
+                  {% if meeting.enabled %}
+                    Currently Enabled
+                    <br>
+                    <small class="text-muted"><a href="{{ url_for('disable_task', id=meeting.id) }}">Disable</a></small>
+                  {% else %}
+                    <div class="text-danger">Currently Disabled</div>
+                    <small class="text-muted"><a href="{{ url_for('enable_task', id=meeting.id) }}">Enable</a></small>
+                  {% endif %}
+                </td>
                 <td>{{ meeting.get_task_name() }}</td>
                 <td class="text"><span>{{ meeting.get_link() }}</span></td>
                 <td>
-                  {% for trigger in meeting.triggers[1:] %}
+                  {% for trigger in meeting.triggers %}
                       Every {{ trigger }}
                       <br>
                   {% endfor %}
@@ -25,7 +36,9 @@
                 <td>{{ meeting.get_next_trigger() }}</td>
                 <td>
                   <a class="btn btn-primary btn-sm" href="{{ url_for('run_task', id=meeting.id) }}">Run Now</a>
+                  <br>
                   <a class="btn btn-primary btn-sm" href="{{ url_for('edit_task', id=meeting.id) }}">Edit</a>
+                  <br>
                   <a class="btn btn-danger btn-sm" href="{{ url_for('delete_task', id=meeting.id) }}">Delete</a>
                 </td>
             </tr>
