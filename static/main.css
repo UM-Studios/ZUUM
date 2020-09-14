@@ -94,3 +94,12 @@ body {
 tr.clickable:hover {
   cursor: pointer;
 }
+
+.centered{
+  text-align: center;
+}
+
+.option-button{
+  width: 5vw;
+  padding: 2px;
+}

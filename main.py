@@ -18,9 +18,6 @@ def get_task_by_id(id):
     return [task for task in get_task_list() if task.id==id][0]
 
 @app.route("/")
-def index():
-    return render_template('MeetingManager.html')
-
 @app.route("/meetings")
 def meetings():
     return render_template('Meetings.html', meetings = get_task_list())
