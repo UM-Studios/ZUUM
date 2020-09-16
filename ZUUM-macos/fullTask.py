@@ -105,8 +105,8 @@ class FullTask():
   #if returns true then its valid
   @classmethod
   def validate_filename(cls, filename):
-    return re.compile(r'^\..*|.*:.*').search(filename) == None and not len(filename) == 0 and not len(filename) > 255
+    return re.compile(r'^\..*|.*:.*').search(filename) == None and not len(filename) == 0 and not len(filename) > 255 and ' ' not in filename
 
   @classmethod
   def link_validate(cls, link):
-    return bool(re.compile(r"^(?:(?:https?:\/\/)?(?:us02web\.)?zoom\.us\/[jw]\/)(\d+)\??(tk=[a-zA-Z0-9_.-]+)?&?(pwd=[a-zA-Z0-9]+)?$").match(link))
+    return bool(re.compile(r"^(?:(?:https?:\/\/)?(?:us02web\.)?zoom\.us\/[jw]\/)(\d+)\??(tk=[a-zA-Z0-9_.-]+)?&?(pwd=[a-zA-Z0-9]+)?(?:#.*)?$").match(link))
