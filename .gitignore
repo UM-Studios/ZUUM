@@ -13,3 +13,4 @@ tempCodeRunnerFile.*
 test*
 *.build
 *.dist
+*.bak
