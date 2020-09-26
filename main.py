@@ -1,6 +1,6 @@
 from TaskFunctions import *
 from flask import Flask, render_template, request, redirect, url_for, flash
-#from flaskwebgui import FlaskUI
+from flaskwebgui import FlaskUI
 from datetime import datetime
 import hashlib
 
@@ -21,6 +21,7 @@ def get_task_by_id(id):
         return False
 
 @app.route("/")
+@app.route("/calendar")
 def calendar():
     days = {"Sunday":[],"Monday":[],"Tuesday":[],"Wednesday":[],"Thursday":[],"Friday":[],"Saturday":[]}
     for task in get_task_list():
@@ -55,7 +56,7 @@ def edit_task(id):
     if task == False:
         flash("That task doesn't exist", "info")
     elif request.method == "POST":
-        if request.form['action'] == "Add Run Time":
+        if request.form['action'] == "+":
             day = request.form['trigger_day']
             time = request.form['time']
             if (len(time)==5):
@@ -65,7 +66,9 @@ def edit_task(id):
                 trigger = Trigger(day, trigger_time)
                 task.add_trigger(trigger)
                 task.commit_changes()
-            flash("Run Time Added", "success")
+                flash("Run Time Added", "success")
+            else:
+                flash("Couldn't Add Time", "danger")
         elif request.form['action'] == "Save Changes":
             name = f"ZoomJoin\\{request.form['meeting_name']}"
             task.delete()
@@ -83,6 +86,11 @@ def edit_task(id):
                 trigger_time = trigger_time.replace(hour=int(hour), minute=int(minute))
                 trigger = Trigger(day, trigger_time)
                 task.add_trigger(trigger)
+            enabled = request.form.get('enabled')
+            if enabled == None:
+                task.enabled = True
+            else:
+                task.enabled = False
             for i in range(0,numTriggers):
                 day = request.form[f'trigger_day{i+1}']
                 time = request.form[f'time{i+1}']

@@ -14,7 +14,7 @@
     </thead>
     <tbody>
         {% for meeting in meetings %}
-            <tr class="clickable" onclick="window.location='/{{ meeting.id }}/edit_task';">
+            <tr>
                 <td>
                   {% if meeting.enabled %}
                     Currently Enabled

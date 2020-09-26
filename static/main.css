@@ -164,3 +164,62 @@ tr.clickable:hover {
   padding: 2px;
   width: 70px;
 }
+
+.checkbox {
+	opacity: 0;
+	position: absolute;
+}
+
+.label {
+  background-color: green;
+  padding-top: 10px;
+	border-radius: 50px;
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	justify-content: space-between;
+	position: relative;
+	height: 15px;
+	width: 30px;
+  transform: scale(1.5);
+  top: 8px;
+}
+
+.label .ball {
+	background-color: #fff;
+	border-radius: 50%;
+	position: absolute;
+	top: 2px;
+	left: 2px;
+	height: 11px;
+	width: 11px;
+	transform: translateX(0px);
+	transition: transform 0.2s linear;
+}
+
+.checkbox:checked + .label .ball {
+  transform: translateX(15px);
+}
+
+.checkbox:checked + .label {
+	background-color: red;
+}
+
+.runtime{
+  padding-right: 10px;
+}
+
+.times{
+  height: 25px;
+  margin: 0px;
+}
+
+.taskname{
+  border: 0px;
+  background-color: #fafafa;
+}
+
+#addruntime{
+  border: 0px;
+  background-color: #fafafa;
+}

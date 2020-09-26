@@ -1,10 +1,8 @@
 {% extends "layout.html" %}
 
 {% block content %}
-    <h2>{{ task.get_task_name() }}</h2>
     <form method="POST" action="{{ url_for('edit_task', id=task.id) }}">
-        <label>Name: </label>
-        <input type="text" name="meeting_name" value="{{ task.get_task_name() }}">
+        <input class="h2 taskname" type="text" name="meeting_name" value="{{ task.get_task_name() }}">
         <br>
         <label>Link: </label>
         <input type="text" name="meeting_link" value="{{ task.get_link() }}">
@@ -22,11 +20,21 @@
         </select>
         <label> at </label>
         <input type="time" name="time">
-        <input type="submit" name="action" value="Add Run Time">
-        <h4>Current Times</h4>
+        <input id="addruntime" type="submit" name="action" value="+">
+        <div>
+            <label class="h4 runtime">Run Times</label>
+            {% if task.enabled %}
+            <input type="checkbox" class="checkbox" name="enabled" id="chk">
+            {% else %}
+            <input type="checkbox" class="checkbox" name="enabled" id="chk" checked>
+            {% endif %}
+            <label class="label" for="chk">
+                <div class="ball"></div>
+            </label>
+        </div>
         {% for trigger in task.triggers %}
-            <label>Every </label>
-            <select id="trigger_day{{ loop.index }}" name="trigger_day{{ loop.index }}">
+            <!-- <label>Every </label> -->
+            <select class="times" id="trigger_day{{ loop.index }}" name="trigger_day{{ loop.index }}">
                 <option value="Monday">Monday</option>
                 <option value="Tuesday">Tuesday</option>
                 <option value="Wednesday">Wednesday</option>
@@ -36,7 +44,7 @@
                 <option value="Sunday">Sunday</option>
             </select>
             <label> at </label>
-            <input type="time" name="time{{ loop.index }}" value="{{ trigger.formatted_time() }}">
+            <input class="times" type="time" name="time{{ loop.index }}" value="{{ trigger.formatted_time() }}">
             <br>
         {% endfor %}
         <br>
