@@ -15,9 +15,26 @@ app.secret_key = '8af32bf6ff121fecbce4cbb67f5cb43b'
 current_triggers = []
 
 def get_task_by_id(id):
-    return [task for task in get_task_list() if task.id==id][0]
+    try:
+        return [task for task in get_task_list() if task.id==id][0]
+    except:
+        return False
 
 @app.route("/")
+def calendar():
+    days = {"Sunday":[],"Monday":[],"Tuesday":[],"Wednesday":[],"Thursday":[],"Friday":[],"Saturday":[]}
+    for task in get_task_list():
+        for trigger in task.triggers:
+            days[trigger.day].append([trigger.formatted_time(), task, trigger.time.hour*60+trigger.time.minute+65])
+    data = [["Sun", days["Sunday"]],
+            ["Mon", days["Monday"]],
+            ["Tue", days["Tuesday"]],
+            ["Wed", days["Wednesday"]],
+            ["Thu", days["Thursday"]],
+            ["Fri", days["Friday"]],
+            ["Sat", days["Saturday"]]]
+    return render_template('Calendar.html', data=data)
+
 @app.route("/meetings")
 def meetings():
     return render_template('Meetings.html', meetings = get_task_list())
@@ -35,7 +52,9 @@ def new_meeting():
 @app.route("/<string:id>/edit_task", methods=["GET", "POST"])
 def edit_task(id):
     task = get_task_by_id(id)
-    if request.method == "POST":
+    if task == False:
+        flash("That task doesn't exist", "info")
+    elif request.method == "POST":
         if request.form['action'] == "Add Run Time":
             day = request.form['trigger_day']
             time = request.form['time']
@@ -49,9 +68,11 @@ def edit_task(id):
             flash("Run Time Added", "success")
         elif request.form['action'] == "Save Changes":
             name = f"ZoomJoin\\{request.form['meeting_name']}"
+            task.delete()
             link = request.form['meeting_link']
             numTriggers = len(task.triggers)
             task.rename(name)
+            task.id = hashlib.sha224(task.get_task_name().encode('utf-8')).hexdigest()
             task.set_link(link)
             task.triggers = []
             day = request.form['trigger_day']

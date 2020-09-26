@@ -99,7 +99,68 @@ tr.clickable:hover {
   text-align: center;
 }
 
+.calendar{
+  overflow: hidden;
+}
+
+.calendar_side{
+  display: flex;
+  flex-direction: column;
+  float: left;
+  font-size: 10px;
+}
+
+.calendar_side div{
+  padding-top: 20px;
+  padding-bottom: 20px;
+  padding-left: 0px;
+  padding-right: 10px;
+  border: 0px;
+}
+
+.date{
+  display: block;
+  position: fixed;
+  z-index: 1;
+  text-align: center;
+  width: 10vw;
+  background-color:#fafafa;
+}
+
+.time{
+  width: 30px;
+  height: 60px;
+}
+
+.day{
+  display: flex;
+  flex-direction: column;
+  width: 10vw;
+  float: left;
+  position: relative;
+  background-color: #fafafa;
+  height: 1400px;
+}
+
+.day div{
+  padding: 5px;
+  text-align: center;
+}
+
+.calendar-event{
+  width: 10vw;
+  color: black;
+  border-bottom-color: black;
+  border-bottom: 2px;
+  border-bottom-style: solid;
+}
+
+.down{
+  position: absolute;
+  top: var(--down-amount);
+}
+
 .option-button{
-  width: 5vw;
   padding: 2px;
+  width: 70px;
 }
