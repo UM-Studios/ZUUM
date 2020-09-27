@@ -19,7 +19,7 @@
                 {% for time, task, amount in events %}
                     <a class="down calendar-event"
                         style="--down-amount: {{ amount }}px;"
-                        href="{{ url_for('edit_task', id=task.id) }}">{{ task.get_task_name() }}, {{ time }}</a>
+                        href="{{ url_for('edit_task', id=task.id) }}">{{ task.name }}, {{ time }}</a>
                 {% endfor %}
             </div>
         {% endfor %}
