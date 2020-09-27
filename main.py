@@ -135,5 +135,13 @@ def disable_task(id):
     flash(f"Disabled {task.get_task_name()}", "success")
     return redirect(url_for('meetings'))
 
+@app.route("/<string:id>/change_status", methods=["POST"])
+def change_status(id):
+    task = get_task_by_id(id)
+    task.enabled = not task.enabled
+    task.commit_changes()
+    flash(f"Enabled {task.get_task_name()}", "success")
+    return redirect(url_for('meetings'))
+
 if __name__ == "__main__":
     app.run(debug=True)

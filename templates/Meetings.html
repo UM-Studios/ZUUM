@@ -4,7 +4,7 @@
 <table class="table table-striped table-bordered">
     <thead>
       <tr>
-        <th scope="col">Status</th>
+        <th scope="col">Enabled</th>
         <th scope="col">Name</th>
         <th scope="col">Link</th>
         <th scope="col">Run Times</th>
@@ -16,14 +16,16 @@
         {% for meeting in meetings %}
             <tr>
                 <td>
-                  {% if meeting.enabled %}
-                    Currently Enabled
-                    <br>
-                    <small class="text-muted"><a href="{{ url_for('disable_task', id=meeting.id) }}">Disable</a></small>
-                  {% else %}
-                    <div class="text-danger">Currently Disabled</div>
-                    <small class="text-muted"><a href="{{ url_for('enable_task', id=meeting.id) }}">Enable</a></small>
-                  {% endif %}
+                  <div>
+                    {% if meeting.enabled %}
+                    <input type="checkbox" class="checkbox" name="enabled" id="chk" onclick="change_state('{{ meeting.id }}')">
+                    {% else %}
+                    <input type="checkbox" class="checkbox" name="enabled" id="chk" onclick="change_state('{{ meeting.id }}')" checked>
+                    {% endif %}
+                    <label class="label" for="chk">
+                        <div class="ball"></div>
+                    </label>
+                  </div>
                 </td>
                 <td>{{ meeting.get_task_name() }}</td>
                 <td class="text"><span>{{ meeting.get_link() }}</span></td>
@@ -46,3 +48,18 @@
     </tbody>
   </table>
 {% endblock content %}
+
+{% block script %}
+<script>
+  var script = document.createElement('script');
+  script.src = 'https://code.jquery.com/jquery-3.4.1.min.js';
+  script.type = 'text/javascript';
+  document.getElementsByTagName('head')[0].appendChild(script);
+
+  function change_state(id){
+    console.log("hi");
+    $.post(`/${id}/change_status`);
+    return false;
+  }
+</script>
+{% endblock script %}
