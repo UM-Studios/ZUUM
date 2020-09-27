@@ -7,10 +7,13 @@ import hashlib
 import rpyc
 
 import os
+import sys
 from apscheduler.schedulers.background import BackgroundScheduler
 from appdata import appdata
 
 from apscheduler.triggers.combining import OrTrigger
+
+from subprocess import Popen
 
 #zoompath = r"%APPDATA%\Zoom\bin\Zoom.exe"
 
@@ -23,7 +26,9 @@ app.secret_key = '8af32bf6ff121fecbce4cbb67f5cb43b'
 try:
     conn = rpyc.connect('localhost', 12345, config={"allow_all_attrs": True, "allow_pickle": True})
 except ConnectionRefusedError:
-    os.system("python server.py")
+    devnull = open(os.devnull, 'wb') # Use this in Python < 3.3
+    # Python >= 3.3 has subprocess.DEVNULL
+    Popen([sys.executable, 'server.py'], stdout=devnull, stderr=devnull, shell=True)
     try:
         conn = rpyc.connect('localhost', 12345, config={"allow_all_attrs": True, "allow_pickle": True})
     except ConnectionRefusedError:
