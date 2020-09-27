@@ -52,7 +52,7 @@ class Task:
         self.name = name
         self.args = args
         self.triggers = triggers
-        self.trigger = OrTrigger(triggers)
+        self.trigger = OrTrigger(self.triggers)
         self.enabled = enabled
         self.id = id
     @classmethod
@@ -128,7 +128,10 @@ class Task:
             job = scheduler.modify_job(self.id, jobstore, **changes)
             self.__dict__.update(Task.task_from_job(job).__dict__)
         else:
-            self.__dict__.update(Task.task_from_job(scheduler.add_job(func, trigger=self.trigger, args=[self.args], name=self.name, next_run_time=self.trigger.get_next_fire_time(None, datetime.now()) if self.enabled else None, jobstore='default', executor='default')).__dict__)
+            job = scheduler.add_job(func, trigger=self.trigger, args=[self.args], next_run_time = None, name=self.name, jobstore='default', executor='default')
+            if self.enabled:
+                scheduler.resume_job(job.id, jobstore)
+            self.__dict__.update(Task.task_from_job(job).__dict__)
     def delete(self, scheduler, jobstore = 'default'):
         if self.id:
             scheduler.remove_job(self.id, jobstore)
