@@ -65,7 +65,7 @@ def new_meeting():
     if request.method == "POST":
         name = request.form['meeting_name']
         link = request.form['meeting_link']
-        newtask = Task.task_from_browser(name, True, link)
+        newtask = Task.task_from_browser(name, False, link)
         newtask.configure(scheduler, func='server:serv_joinMeeting')
         id = newtask.id
         return redirect(url_for('edit_task', id=id))

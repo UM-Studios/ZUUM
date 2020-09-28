@@ -53,7 +53,7 @@ class Task:
         self.args = args
         self.triggers = triggers
         self.trigger = OrTrigger(self.triggers)
-        self.enabled = enabled
+        self.enabled = enabled if self.triggers else False
         self.id = id
     @classmethod
     def task_from_job(cls, job):
