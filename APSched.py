@@ -123,6 +123,8 @@ class Task:
             changes = {change: changes[change] for change in changes if changes[change] is not None}
             if 'triggers' in changes:
                 changes['trigger'] = OrTrigger(changes['triggers'])
+                self.triggers = changes['triggers']
+                self.trigger = changes['trigger']
                 changes.pop('triggers')
             if 'enabled' in changes:
                 self.enable(scheduler) if changes['enabled'] else self.disable(scheduler)
@@ -142,10 +144,12 @@ class Task:
         if self.id:
             scheduler.remove_job(self.id, jobstore)
         else:
-            warnings.warn("Can't delete non-created task.")
+            warnings.warn("Can't delete non-created task")
     def enable(self, scheduler, jobstore = 'default'):
         if self.triggers:
             self.__dict__.update(Task.task_from_job(scheduler.resume_job(self.id, jobstore)).__dict__)
+        else:
+            warnings.warn("Can't enable task with no triggers")
     def disable(self, scheduler, jobstore = 'default'):
         self.__dict__.update(Task.task_from_job(scheduler.pause_job(self.id, jobstore)).__dict__)
     def formatted_next_run(self):
