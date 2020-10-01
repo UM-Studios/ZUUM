@@ -57,7 +57,9 @@ class Task:
         self.id = id
     @classmethod
     def task_from_job(cls, job):
-        return cls(job.name, bool(job.next_run_time), id = job.id, args = job.args[0], triggers = [Trigger.from_cron_trigger(ct) for ct in job.trigger.triggers])
+        #return cls(job.args[0].name, job.args[0].enabled, id = job.id, args = job.args[0].args, triggers = job.args[0].triggers)#[Trigger.from_cron_trigger(ct) for ct in job.args[0].trigger.triggers])
+        return cls(job.name, bool(job.next_run_time), id = job.id, args = job.args[0].args, triggers = [Trigger.from_cron_trigger(ct) for ct in job.trigger.triggers])
+
     @classmethod
     def task_from_browser(cls, name, enabled, link, triggers = []):
         return cls(name, enabled, Task.args_from_browser(link), triggers)
@@ -125,10 +127,14 @@ class Task:
             if 'enabled' in changes:
                 self.enable(scheduler) if changes['enabled'] else self.disable(scheduler)
                 changes.pop('enabled')
+            if 'link' in changes:
+                self.args = Task.args_from_browser(changes['link'])
+                changes['args'] = [self]
+                changes.pop('link')
             job = scheduler.modify_job(self.id, jobstore, **changes)
             self.__dict__.update(Task.task_from_job(job).__dict__)
         else:
-            job = scheduler.add_job(func, trigger=self.trigger, args=[self.args], next_run_time = None, name=self.name, jobstore='default', executor='default')
+            job = scheduler.add_job(func, trigger=self.trigger, args=[self], next_run_time = None, name=self.name, jobstore='default', executor='default')
             if self.enabled:
                 scheduler.resume_job(job.id, jobstore)
             self.__dict__.update(Task.task_from_job(job).__dict__)
