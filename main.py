@@ -26,13 +26,14 @@ app.secret_key = '8af32bf6ff121fecbce4cbb67f5cb43b'
 try:
     conn = rpyc.connect('localhost', 12345, config={"allow_all_attrs": True, "allow_pickle": True})
 except ConnectionRefusedError:
+    print('error')
     devnull = open(os.devnull, 'wb') # Use this in Python < 3.3
     # Python >= 3.3 has subprocess.DEVNULL
-    Popen([sys.executable, 'server.py'], stdout=devnull, stderr=devnull, shell=True)
+    #Popen([sys.executable, 'server.py'], stdout=devnull, stderr=devnull, shell=True)
     try:
         conn = rpyc.connect('localhost', 12345, config={"allow_all_attrs": True, "allow_pickle": True})
     except ConnectionRefusedError:
-        exit
+        exit('could not connect to server')
 
 scheduler = conn.root
 
@@ -66,7 +67,7 @@ def new_meeting():
         name = request.form['meeting_name']
         link = request.form['meeting_link']
         newtask = Task.task_from_browser(name, False, link)
-        newtask.configure(scheduler, func='server:serv_joinMeeting')
+        newtask.configure(scheduler)
         id = newtask.id
         return redirect(url_for('edit_task', id=id))
     return render_template('NewMeeting.html')
@@ -74,7 +75,7 @@ def new_meeting():
 @app.route("/<string:id>/edit_task", methods=["GET", "POST"])
 def edit_task(id):
     task = Task.get_task_list(scheduler)[id]
-    changes = dict.fromkeys(('name', 'args', 'triggers', 'enabled'))
+    changes = dict.fromkeys(('name', 'link', 'triggers', 'enabled'))
     if task == False:
         flash("That task doesn't exist", "info")
     elif request.method == "POST":
@@ -95,7 +96,7 @@ def edit_task(id):
         elif request.form['action'] == "Save Changes":
             changes['name'] = request.form['meeting_name']
             link = request.form['meeting_link']
-            changes['args'] = [Task.args_from_browser(link)]
+            changes['link'] = link
             #numTriggers = len(task.triggers)
             #task.rename(name)
             #task.id = hashlib.sha224(task.get_task_name().encode('utf-8')).hexdigest()
@@ -129,6 +130,7 @@ def edit_task(id):
 def run_task(id):
     task = Task.get_task_list(scheduler)[id]
     scheduler.run_job(task.id, 'default')
+    print(scheduler.get_job(id).trigger)
     flash("Running Task", "info")
     return redirect(url_for('meetings'))
 
