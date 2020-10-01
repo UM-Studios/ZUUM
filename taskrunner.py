@@ -29,22 +29,22 @@ class SchedulerService(rpyc.Service):
     def exposed_add_job(self, func, *args, **kwargs):
         return scheduler.add_job(serv_joinMeeting, *args, **kwargs)
     
-    def exposed_run_job(self, job_id, jobstore='defaut'):
+    def exposed_run_job(self, job_id, jobstore='default'):
         return scheduler.modify_job(job_id, jobstore, next_run_time=datetime.now())
 
-    def exposed_modify_job(self, job_id, jobstore='defaut', **changes):
+    def exposed_modify_job(self, job_id, jobstore='default', **changes):
         return scheduler.modify_job(job_id, jobstore, **changes)
 
-    def exposed_reschedule_job(self, job_id, jobstore='defaut', trigger=None, **trigger_args):
+    def exposed_reschedule_job(self, job_id, jobstore='default', trigger=None, **trigger_args):
         return scheduler.reschedule_job(job_id, jobstore, trigger, **trigger_args)
 
-    def exposed_pause_job(self, job_id, jobstore='defaut'):
+    def exposed_pause_job(self, job_id, jobstore='default'):
         return scheduler.pause_job(job_id, jobstore)
 
-    def exposed_resume_job(self, job_id, jobstore='defaut'):
+    def exposed_resume_job(self, job_id, jobstore='default'):
         return scheduler.resume_job(job_id, jobstore)
 
-    def exposed_remove_job(self, job_id, jobstore='defaut'):
+    def exposed_remove_job(self, job_id, jobstore='default'):
         scheduler.remove_job(job_id, jobstore)
 
     def exposed_get_job(self, job_id):
