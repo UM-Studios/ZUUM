@@ -9,7 +9,6 @@ and run it with ``python -m server``.
 
 import rpyc
 from rpyc.utils.server import ThreadedServer
-
 import apscheduler.jobstores.sqlalchemy
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -17,14 +16,19 @@ from apscheduler.triggers.combining import OrTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 from apscheduler.executors.pool import ThreadPoolExecutor
 from appdata import appdata
-import os
+import os, sys, subprocess
 from datetime import datetime
 from APSched import Task, Trigger
 
 def serv_joinMeeting(task):
     args=task.args
     print(f'[{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}] Ran {task.name}')
-    os.startfile(f'zoommtg://zoom.us/join?{"&".join([arg+"="+args[arg] for arg in args if args[arg]])}')
+    start = f'zoommtg://zoom.us/join?{"&".join([arg+"="+args[arg] for arg in args if args[arg]])}'
+    if sys.platform == "win32":
+        os.startfile(start)
+    else:
+        opener ="open" if sys.platform == "darwin" else "xdg-open"
+        subprocess.call([opener, start])
 
 class SchedulerService(rpyc.Service):
     def exposed_add_job(self, func, *args, **kwargs):
