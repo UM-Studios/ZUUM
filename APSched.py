@@ -8,10 +8,12 @@ See the SQLAlchemy documentation on how to construct those.
 from appdata import appdata
 
 import sys    
-from datetime import datetime, time
+from datetime import datetime, time, MINYEAR
 import os
 import warnings
 import re
+from collections import OrderedDict
+from pytz import UTC
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -48,17 +50,18 @@ class Trigger(CronTrigger):
         return weekdays[self.day]
 
 class Task:
-    def __init__(self, name, enabled, args = argsTemplate, triggers = [], id = None):
+    def __init__(self, name, enabled, args = argsTemplate, triggers = [], id = None, priority = 0):
         self.name = name
         self.args = args
         self.triggers = triggers
         self.trigger = OrTrigger(self.triggers)
         self.enabled = enabled if self.triggers else False
         self.id = id
+        self.priority = priority
     @classmethod
     def task_from_job(cls, job):
         #return cls(job.args[0].name, job.args[0].enabled, id = job.id, args = job.args[0].args, triggers = job.args[0].triggers)#[Trigger.from_cron_trigger(ct) for ct in job.args[0].trigger.triggers])
-        return cls(job.name, bool(job.next_run_time), id = job.id, args = job.args[0].args, triggers = [Trigger.from_cron_trigger(ct) for ct in job.trigger.triggers])
+        return cls(job.name, bool(job.next_run_time), id = job.id, args = job.args[0].args, priority = job.args[0].priority, triggers = [Trigger.from_cron_trigger(ct) for ct in job.trigger.triggers])
 
     @classmethod
     def task_from_browser(cls, name, enabled, link, triggers = []):
@@ -152,12 +155,16 @@ class Task:
             warnings.warn("Can't enable task with no triggers")
     def disable(self, scheduler, jobstore = 'default'):
         self.__dict__.update(Task.task_from_job(scheduler.pause_job(self.id, jobstore)).__dict__)
+    def next_fire(self):
+        return self.trigger.get_next_fire_time(None, datetime.now()) or None
     def formatted_next_run(self):
-        next_fire = self.trigger.get_next_fire_time(None, datetime.now())
+        next_fire = self.next_fire()
         return next_fire.strftime('%A at %I:%M %p').replace(" 0", " ") if next_fire else "None"
     @staticmethod
     def get_task_list(scheduler, jobstore = 'default'):
-        return {job.id: Task.task_from_job(job) for job in scheduler.get_jobs(jobstore = jobstore)}
+        list = {job.id: Task.task_from_job(job) for job in scheduler.get_jobs(jobstore = jobstore)}
+        s = OrderedDict(sorted(list.items(), key=lambda t: (t[1].priority, t[1].next_fire() or datetime.max.replace(tzinfo=UTC), t[1].name)))
+        return s
 
 if __name__ == '__main__':
     if (len(sys.argv)==5):
