@@ -223,3 +223,7 @@ tr.clickable:hover {
   border: 0px;
   background-color: #fafafa;
 }
+
+a.copy-link{
+  font-size: 10px;
+}

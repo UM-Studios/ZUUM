@@ -101,7 +101,7 @@ def edit_task(id):
             #task.rename(name)
             #task.id = hashlib.sha224(task.get_task_name().encode('utf-8')).hexdigest()
             #task.set_link(link)
-            
+
             day = request.form['trigger_day']
             time = request.form['time']
             if (len(time)==5):
@@ -153,6 +153,15 @@ def disable_task(id):
     task = Task.get_task_list(scheduler)[id]
     task.disable(scheduler)
     flash(f"Disabled {task.name}", "success")
+    return redirect(url_for('meetings'))
+
+@app.route("/<string:id>/change_state", methods=["GET","POST"])
+def change_state(id):
+    task = Task.get_task_list(scheduler)[id]
+    if task.enabled:
+        task.disable(scheduler)
+    else:
+        task.enable(scheduler)
     return redirect(url_for('meetings'))
 
 if __name__ == "__main__":

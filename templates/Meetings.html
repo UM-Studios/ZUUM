@@ -16,17 +16,22 @@
         {% for meeting in meetings.values() %}
             <tr>
                 <td>
-                  {% if meeting.enabled %}
-                    Currently Enabled
-                    <br>
-                    <small class="text-muted"><a href="{{ url_for('disable_task', id=meeting.id) }}">Disable</a></small>
-                  {% else %}
-                    <div class="text-danger">Currently Disabled</div>
-                    <small class="text-muted"><a href="{{ url_for('enable_task', id=meeting.id) }}">Enable</a></small>
-                  {% endif %}
+                  <div>
+                    {% if meeting.enabled %}
+                    <input type="checkbox" class="checkbox" name="enabled" id="chk" onclick="change_state('{{ meeting.id }}')">
+                    {% else %}
+                    <input type="checkbox" class="checkbox" name="enabled" id="chk" onclick="change_state('{{ meeting.id }}')" checked>
+                    {% endif %}
+                    <label class="label" for="chk">
+                        <div class="ball"></div>
+                    </label>
+                  </div>
                 </td>
                 <td>{{ meeting.name }}</td>
-                <td class="text"><span>{{ meeting.browser_link() }}</span></td>
+                <td class="text">
+                  <span id="link">{{ meeting.browser_link() }}</span>
+                  <a class="copy-link" href="#" onclick="copylink('{{meeting.browser_link()}}')">Copy Link</a>
+                </td>
                 <td>
                   {% for trigger in meeting.triggers %}
                       Every {{ trigger.formatted_day_time() }}
@@ -46,3 +51,25 @@
     </tbody>
   </table>
 {% endblock content %}
+
+{% block script %}
+<script>
+  var script = document.createElement('script');
+  script.src = 'https://code.jquery.com/jquery-3.4.1.min.js';
+  script.type = 'text/javascript';
+  document.getElementsByTagName('head')[0].appendChild(script);
+
+  function change_state(id){
+    $.post(`/${id}/change_state`);
+    return false;
+  }
+  function copylink(link) {
+    const el = document.createElement('textarea');
+    el.value = link;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+  }
+</script>
+{% endblock script %}
