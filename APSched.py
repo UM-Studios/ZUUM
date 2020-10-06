@@ -34,6 +34,45 @@ def joinMeeting(args):
     os.startfile(f'zoommtg://zoom.us/join?{"&".join([arg+"="+args[arg] for arg in args if args[arg]])}')
     #os.startfile(Task.get_protocol_link(args))
 
+def tree_print(obj, layer):
+    if isinstance(obj, list):
+        print()
+        for v in obj:
+            print('\t'*layer, end = '')
+            tree_print(v, layer+1)
+    elif isinstance(obj, dict):
+        print()
+        for k, v in obj.items():
+            print('\t'*layer, end = '')
+            print(f'{k}: ', end = '')
+            tree_print(v, layer+1)
+    elif isinstance(obj, Task):
+        tree_print({'priority': obj.priority, 'enabled': obj.enabled,'args': obj.args}, layer-1)
+    elif isinstance(obj, OrTrigger):
+        tree_print(obj.triggers, layer)
+    else:
+        print(obj)
+
+class TaskList(OrderedDict):
+    def __init__(self, scheduler, *args, **kwargs):
+        self.scheduler = scheduler
+        super().__init__(*args, **kwargs)
+        self.indices = {i:task.id for i, task in enumerate(self.values())}
+    def clean_index(self):
+        for i, task in enumerate(self):
+            task.priority = i
+    def swap(self, id1, id2):
+        temp = self[id1].priority
+        self[id1].priority = self[id2].priority
+        self[id2].priority = temp
+        new = sorted(self.items(), key=lambda t: (t[1].priority, t[1].next_fire() or datetime.max.replace(tzinfo=UTC), t[1].name))
+        self.__dict__.update(new.__dict__)
+    def shift_task(self, id, direction):
+        shift = (direction > 0) - (direction < 0) #sign() of direction
+        self.swap(id, self.indices[self.keys().index(id)+shift])
+    def print_tasks(self):
+        tree_print({task.name: self.scheduler.get_job(task.id).__getstate__() for task in self.values()}, 0)
+
 class Trigger(CronTrigger):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -51,13 +90,13 @@ class Trigger(CronTrigger):
 
 class Task:
     def __init__(self, name, enabled, args = argsTemplate, triggers = [], id = None, priority = 0):
+        self.priority = priority
         self.name = name
         self.args = args
         self.triggers = triggers
         self.trigger = OrTrigger(self.triggers)
         self.enabled = enabled if self.triggers else False
         self.id = id
-        self.priority = priority
     @classmethod
     def task_from_job(cls, job):
         #return cls(job.args[0].name, job.args[0].enabled, id = job.id, args = job.args[0].args, triggers = job.args[0].triggers)#[Trigger.from_cron_trigger(ct) for ct in job.args[0].trigger.triggers])
@@ -163,7 +202,7 @@ class Task:
     @staticmethod
     def get_task_list(scheduler, jobstore = 'default'):
         list = {job.id: Task.task_from_job(job) for job in scheduler.get_jobs(jobstore = jobstore)}
-        s = OrderedDict(sorted(list.items(), key=lambda t: (t[1].priority, t[1].next_fire() or datetime.max.replace(tzinfo=UTC), t[1].name)))
+        s = TaskList(scheduler, sorted(list.items(), key=lambda t: (t[1].priority, t[1].next_fire() or datetime.max.replace(tzinfo=UTC), t[1].name)))
         return s
 
 if __name__ == '__main__':

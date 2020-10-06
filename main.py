@@ -1,4 +1,4 @@
-from APSched import Task, Trigger, weeknums
+from APSched import Task, Trigger, TaskList, weeknums
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flaskwebgui import FlaskUI
 from datetime import datetime
