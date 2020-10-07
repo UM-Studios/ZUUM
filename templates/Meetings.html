@@ -18,11 +18,11 @@
                 <td>
                   <div>
                     {% if meeting.enabled %}
-                    <input type="checkbox" class="checkbox" name="enabled" id="chk" onclick="change_state('{{ meeting.id }}')">
+                    <input type="checkbox" class="checkbox" name="enabled" id="chk{{loop.index}}" onclick="change_state('{{ meeting.id }}')">
                     {% else %}
-                    <input type="checkbox" class="checkbox" name="enabled" id="chk" onclick="change_state('{{ meeting.id }}')" checked>
+                    <input type="checkbox" class="checkbox" name="enabled" id="chk{{loop.index}}" onclick="change_state('{{ meeting.id }}')" checked>
                     {% endif %}
-                    <label class="label" for="chk">
+                    <label class="label" for="chk{{loop.index}}">
                         <div class="ball"></div>
                     </label>
                   </div>
