@@ -89,6 +89,10 @@ class Trigger(CronTrigger):
         return weekdays[self.day]
 
 class Task:
+    browser_re = r'^((https?:\/\/)?(us02web\.)?zoom\.us\/[jw]\/)(\d+)\??((&?(pwd=[a-zA-Z0-9]+))?|(&?((tk|token)=[a-zA-Z0-9_.-]+))?|(&?(browser=(chrome|firefox|msie|safari)))?|(&?(zc=[01]))?|(&?(uname=[a-zA-Z0-9]+))?|(&?(stype=(100|0|1|101|99)))?|(&?(uid=[a-zA-Z0-9_.-]+))?|(&?(sid=[a-zA-Z0-9_.-]+))?){0,8}(?:#.*)?$'
+    prot_re = r'^zoommtg:\/\/zoom\.us\/(start|join)\??((&?action=[a-zA-Z]+)?|(&?confno=\d+)?|(&?(pwd=[a-zA-Z0-9]+))?|(&?((tk|token)=[a-zA-Z0-9_.-]+))?|(&?(browser=(chrome|firefox|msie|safari)))?|(&?(zc=[01]))?|(&?(uname=[a-zA-Z0-9]+))?|(&?(stype=(100|0|1|101|99)))?|(&?(uid=[a-zA-Z0-9_.-]+))?|(&?(sid=[a-zA-Z0-9_.-]+))?){0,10}$'
+    dayabbr = {0: "M", 1: "T", 2: "W", 3: "T", 4: "F", 5: "S", 6: "S"}
+
     def __init__(self, name, enabled, args = argsTemplate, triggers = [], id = None, priority = 0):
         self.priority = priority
         self.name = name
@@ -144,10 +148,10 @@ class Task:
         return args
     @staticmethod
     def browser_validate(link):
-        return bool(re.compile(r'^((https?:\/\/)?(us02web\.)?zoom\.us\/[jw]\/)(\d+)\??((&?(pwd=[a-zA-Z0-9]+))?|(&?((tk|token)=[a-zA-Z0-9_.-]+))?|(&?(browser=(chrome|firefox|msie|safari)))?|(&?(zc=[01]))?|(&?(uname=[a-zA-Z0-9]+))?|(&?(stype=(100|0|1|101|99)))?|(&?(uid=[a-zA-Z0-9_.-]+))?|(&?(sid=[a-zA-Z0-9_.-]+))?){0,8}(?:#.*)?$').match(link))
+        return bool(re.compile(Task.browser_re).match(link))
     @staticmethod
     def protocol_validate(link):
-        return bool(re.compile(r'^zoommtg:\/\/zoom\.us\/(start|join)\??((&?action=[a-zA-Z]+)?|(&?confno=\d+)?|(&?(pwd=[a-zA-Z0-9]+))?|(&?((tk|token)=[a-zA-Z0-9_.-]+))?|(&?(browser=(chrome|firefox|msie|safari)))?|(&?(zc=[01]))?|(&?(uname=[a-zA-Z0-9]+))?|(&?(stype=(100|0|1|101|99)))?|(&?(uid=[a-zA-Z0-9_.-]+))?|(&?(sid=[a-zA-Z0-9_.-]+))?){0,10}$').match(link))
+        return bool(re.compile(Task.prot_re).match(link))
     @staticmethod
     def name_validate(name):
         return True
@@ -195,10 +199,24 @@ class Task:
     def disable(self, scheduler, jobstore = 'default'):
         self.__dict__.update(Task.task_from_job(scheduler.pause_job(self.id, jobstore)).__dict__)
     def next_fire(self):
+        if not self.enabled:
+            return None
         return self.trigger.get_next_fire_time(None, datetime.now()) or None
     def formatted_next_run(self):
         next_fire = self.next_fire()
         return next_fire.strftime('%A at %I:%M %p').replace(" 0", " ") if next_fire else "None"
+    def triggers_by_day(self):
+        d = [[Task.dayabbr[i],False,[]] for i in range(7)]
+        for trigger in self.triggers:
+            if self.next_fire() and self.next_fire().weekday() == trigger.day:
+                next = True
+                d[trigger.day][1] = True
+            else:
+                next = False
+            add = (next, trigger.formatted_time())
+            if trigger.time:
+                d[trigger.day][2].append(add)
+        return d
     @staticmethod
     def get_task_list(scheduler, jobstore = 'default'):
         list = {job.id: Task.task_from_job(job) for job in scheduler.get_jobs(jobstore = jobstore)}
