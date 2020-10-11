@@ -70,13 +70,12 @@
           <td>{{ meeting.name }}</td>
           <td class="text">
             {% for i in range(7) %}
-              <button type="button" class="btn btn-circle danger" data-toggle="popover" title="Popover title">
-                {{meeting.triggers_by_day()[(i-1)%7][0]}}
+              <button type="button" class="btn btn-circle danger" data-toggle="popover" title="{{meeting.triggers_by_day()[(i-1)%7][0]}}">
+                {{meeting.triggers_by_day()[(i-1)%7][0][0]}}
               </button>
               <div id="popover_content_wrapper" style="display: none">
                 {% for j in meeting.triggers_by_day()[(i-1)%7][2] %}
                   <div>{{j[1]}}</div>
-                  <br>
                 {% endfor %}
               </div>
             {% endfor %}
@@ -101,10 +100,6 @@
       {% endfor %}
     </tbody>
   </table>
-  <button type="button" class="btn btn-lg danger" data-toggle="popover" title="Popover title">Click to toggle popover</button>
-    <div id="popover_content_wrapper" style="display: none">
-      <div>This is your div contasdfhasdfent</div>
-    </div>
 
 {% endblock content %}
 
@@ -116,8 +111,9 @@
   document.getElementsByTagName('head')[0].appendChild(script);
 
 $(function(){
-  $('.danger').popover({ 
+  $('.danger').popover({
     html : true,
+    trigger: 'focus',
     content: function() {
       return $(this).next('#popover_content_wrapper').html();
     }

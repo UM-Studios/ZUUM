@@ -7,7 +7,7 @@ See the SQLAlchemy documentation on how to construct those.
 """
 from appdata import appdata
 
-import sys    
+import sys
 from datetime import datetime, time, MINYEAR
 import os
 import warnings
@@ -92,6 +92,7 @@ class Task:
     browser_re = r'^((https?:\/\/)?(us02web\.)?zoom\.us\/[jw]\/)(\d+)\??((&?(pwd=[a-zA-Z0-9]+))?|(&?((tk|token)=[a-zA-Z0-9_.-]+))?|(&?(browser=(chrome|firefox|msie|safari)))?|(&?(zc=[01]))?|(&?(uname=[a-zA-Z0-9]+))?|(&?(stype=(100|0|1|101|99)))?|(&?(uid=[a-zA-Z0-9_.-]+))?|(&?(sid=[a-zA-Z0-9_.-]+))?){0,8}(?:#.*)?$'
     prot_re = r'^zoommtg:\/\/zoom\.us\/(start|join)\??((&?action=[a-zA-Z]+)?|(&?confno=\d+)?|(&?(pwd=[a-zA-Z0-9]+))?|(&?((tk|token)=[a-zA-Z0-9_.-]+))?|(&?(browser=(chrome|firefox|msie|safari)))?|(&?(zc=[01]))?|(&?(uname=[a-zA-Z0-9]+))?|(&?(stype=(100|0|1|101|99)))?|(&?(uid=[a-zA-Z0-9_.-]+))?|(&?(sid=[a-zA-Z0-9_.-]+))?){0,10}$'
     dayabbr = {0: "M", 1: "T", 2: "W", 3: "T", 4: "F", 5: "S", 6: "S"}
+    daynames = {0: "Monday", 1: "Tuesday", 2: "Wednesday", 3: "Thursday", 4: "Friday", 5: "Saturday", 6: "Sunday"}
 
     def __init__(self, name, enabled, args = argsTemplate, triggers = [], id = None, priority = 0):
         self.priority = priority
@@ -206,7 +207,7 @@ class Task:
         next_fire = self.next_fire()
         return next_fire.strftime('%A at %I:%M %p').replace(" 0", " ") if next_fire else "None"
     def triggers_by_day(self):
-        d = [[Task.dayabbr[i],False,[]] for i in range(7)]
+        d = [[Task.daynames[i],False,[]] for i in range(7)]
         for trigger in self.triggers:
             if self.next_fire() and self.next_fire().weekday() == trigger.day:
                 next = True
@@ -240,7 +241,7 @@ if __name__ == '__main__':
     scheduler.start()
     if (len(sys.argv)==5):
         task.configure(scheduler)
-    
+
     #scheduler.pause_job(job_id='705d441c3b35490290eb85f72a74dff4', jobstore='default')
     #scheduler.print_jobs()
     for task in Task.get_task_list(scheduler).values():
@@ -251,4 +252,3 @@ if __name__ == '__main__':
         #print(Task.task_from_job(job).name, Task.task_from_job(job).enabled)
     #print(fields)
     scheduler.shutdown()
-    
