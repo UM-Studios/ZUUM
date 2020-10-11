@@ -98,14 +98,29 @@
       {% endfor %}
     </tbody>
   </table>
+  <button type="button" class="btn btn-lg danger" data-toggle="popover" title="Popover title">Click to toggle popover</button>
+    <div id="popover_content_wrapper" style="display: none">
+      <div>This is your div contasdfhasdfent</div>
+    </div>
+
 {% endblock content %}
 
 {% block script %}
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
 <script>
   var script = document.createElement('script');
   script.src = 'https://code.jquery.com/jquery-3.4.1.min.js';
   script.type = 'text/javascript';
   document.getElementsByTagName('head')[0].appendChild(script);
+
+$(function(){
+  $('.danger').popover({ 
+    html : true,
+    content: function() {
+      return $('#popover_content_wrapper').html();
+    }
+  })
+})
 
   function change_state(id){
     $.post(`/${id}/change_state`);
