@@ -164,17 +164,18 @@ def change_state(id):
         task.enable(scheduler)
     return redirect(url_for('meetings'))
 
-@app.route("/<string:id>/shift_up", methods=["GET","POST"])
-def shift_up(id):
+@app.route("/<string:id>/shift_task/<string:direction>", methods=["GET","POST"])
+def shift_task(id, direction):
+    print(id, direction)
     tasklist = Task.get_task_list(scheduler)
-    tasklist.shift_task(id, -1)
+    tasklist.shift_task(id, int(direction))
     return redirect(url_for('meetings'))
-
+"""
 @app.route("/<string:id>/shift_down", methods=["GET","POST"])
 def shift_down(id):
     tasklist = Task.get_task_list(scheduler)
     tasklist.shift_task(id, 1)
     return redirect(url_for('meetings'))
-
+"""
 if __name__ == "__main__":
     app.run(debug=True)

@@ -90,7 +90,7 @@
         {% endfor %}
     </tbody>
   </table>
-  <table class="table table-striped">
+  <table class="table table-striped meetinglist">
     <thead>
       <tr>
         <th scope="col">Meetings</th>
@@ -100,10 +100,10 @@
       {% for meeting in meetings.values() %}
         <tr>
           <td>
-            <i class="arrow arrow-up" onclick="post_to('shift_up','{{meeting.id}}')"></i>
+            <i class="arrow arrow-up" id="up{{loop.index}}" data-index={{loop.index}}></i>
             <br>
-            <i class="arrow arrow-down" onclick="post_to('shift_down','{{meeting.id}}')"></i>
-          </td>
+            <i class="arrow arrow-down" id="down{{loop.index}}" data-index={{loop.index}}></i>
+            </td>
           <td class="centered">
             <!--<a class="btn btn-primary btn-sm option-button" href="{{ url_for('run_task', id=meeting.id) }}">Run Now</a>-->
             <a href="{{ url_for('run_task', id=meeting.id) }}">
@@ -175,5 +175,43 @@
     document.execCommand('copy');
     document.body.removeChild(el);
   }
+
+  function shift_task(id, index, direction) {
+    $.post(`/${id}/shift_task/${direction}`)
+    console.log(`/${id}/shift_task/${direction}`)
+    other = parseInt(index)+parseInt(direction)
+    console.log(other)
+    let replacetr = $("tr").has("i[data-index="+ other +"]")
+    let replace = $("i[data-index="+ other +"]")
+    let movetr = $("tr").has("i[data-index="+ index +"]")
+    let move = $("i[data-index="+ index +"]")
+    if (direction > 0) {
+      movetr.insertAfter(replacetr)
+    } else if (direction < 0) {
+      movetr.insertBefore(replacetr)
+    }
+    replace.attr('data-index', index)
+    move.attr('data-index', other)
+  }
+  $(document).ready(function(){
+    {% for meeting in meetings.values() %}
+    $('#up{{loop.index}}').click(function(){
+        let index = $(this).attr('data-index');
+        shift_task('{{meeting.id}}', index, -1)
+    });
+    $('#down{{loop.index}}').click(function(){
+        let index = $(this).attr('data-index');
+        shift_task('{{meeting.id}}', index, 1)
+        /*other = parseInt(index)+1
+        let replacetr = $("tr").has("i[data-index="+ other +"]")
+        let replace = $("i[data-index="+ other +"]")
+        let movetr = $("tr").has("i[data-index="+ index +"]")
+        let move = $("i[data-index="+ index +"]")
+        movetr.insertAfter(replacetr)
+        replace.attr('data-index', index)
+        move.attr('data-index', other)*/
+    });
+    {%endfor%}
+});
 </script>
 {% endblock script %}
