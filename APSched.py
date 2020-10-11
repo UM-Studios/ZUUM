@@ -59,17 +59,19 @@ class TaskList(OrderedDict):
         super().__init__(*args, **kwargs)
         self.indices = {i:task.id for i, task in enumerate(self.values())}
     def clean_index(self):
-        for i, task in enumerate(self):
-            task.priority = i
+        for i, task in enumerate(self.values()):
+            task.configure(self.scheduler, **{'priority': i})
+        return self
     def swap(self, id1, id2):
         temp = self[id1].priority
-        self[id1].priority = self[id2].priority
-        self[id2].priority = temp
-        new = sorted(self.items(), key=lambda t: (t[1].priority, t[1].next_fire() or datetime.max.replace(tzinfo=UTC), t[1].name))
+        self[id1].configure(self.scheduler, **{'priority': self[id2].priority})
+        self[id2].configure(self.scheduler, **{'priority': temp})
+        new = TaskList(self.scheduler, sorted(self.items(), key=lambda t: (t[1].priority, t[1].next_fire() or datetime.max.replace(tzinfo=UTC), t[1].name)))
         self.__dict__.update(new.__dict__)
+        return self
     def shift_task(self, id, direction):
         shift = (direction > 0) - (direction < 0) #sign() of direction
-        self.swap(id, self.indices[self.keys().index(id)+shift])
+        return self.swap(id, self.indices[list(self.keys()).index(id)+shift])
     def print_tasks(self):
         tree_print({task.name: self.scheduler.get_job(task.id).__getstate__() for task in self.values()}, 0)
 
@@ -180,6 +182,10 @@ class Task:
                 self.args = Task.args_from_browser(changes['link'])
                 changes['args'] = [self]
                 changes.pop('link')
+            if 'priority' in changes:
+                self.priority = changes['priority']
+                changes['args'] = [self]
+                changes.pop('priority')
             job = scheduler.modify_job(self.id, jobstore, **changes)
             self.__dict__.update(Task.task_from_job(job).__dict__)
         else:
@@ -224,7 +230,7 @@ class Task:
     def get_task_list(scheduler, jobstore = 'default'):
         list = {job.id: Task.task_from_job(job) for job in scheduler.get_jobs(jobstore = jobstore)}
         s = TaskList(scheduler, sorted(list.items(), key=lambda t: (t[1].priority, t[1].next_fire() or datetime.max.replace(tzinfo=UTC), t[1].name)))
-        return s
+        return s.clean_index()
 
 if __name__ == '__main__':
     if (len(sys.argv)==5):
