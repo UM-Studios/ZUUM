@@ -42,9 +42,9 @@
                 <td>
                   <div>
                     {% if meeting.enabled %}
-                    <input type="checkbox" class="checkbox" name="enabled" id="chk{{loop.index}}" onclick="change_state('{{ meeting.id }}')">
+                    <input type="checkbox" class="checkbox" name="enabled" id="chk{{loop.index}}" onclick="post_to('change_state','{{ meeting.id }}')">
                     {% else %}
-                    <input type="checkbox" class="checkbox" name="enabled" id="chk{{loop.index}}" onclick="change_state('{{ meeting.id }}')" checked>
+                    <input type="checkbox" class="checkbox" name="enabled" id="chk{{loop.index}}" onclick="post_to('change_state','{{ meeting.id }}')" checked>
                     {% endif %}
                     <label class="label" for="chk{{loop.index}}">
                         <div class="ball"></div>
@@ -83,6 +83,11 @@
     <tbody>
       {% for meeting in meetings.values() %}
         <tr>
+          <td>
+            <i class="arrow arrow-up" onclick="post_to('shift_up','{{meeting.id}}')"></i>
+            <br>
+            <i class="arrow arrow-down" onclick="post_to('shift_down','{{meeting.id}}')"></i>
+          </td>
           <td class="centered">
             <!--<a class="btn btn-primary btn-sm option-button" href="{{ url_for('run_task', id=meeting.id) }}">Run Now</a>-->
             <a href="{{ url_for('run_task', id=meeting.id) }}">
@@ -111,9 +116,9 @@
           <td>
             <div>
               {% if meeting.enabled %}
-              <input type="checkbox" class="checkbox" name="enabled" id="chk{{loop.index}}" onclick="change_state('{{ meeting.id }}')">
+              <input type="checkbox" class="checkbox" name="enabled" id="chk{{loop.index}}" onclick="post_to('change_state','{{ meeting.id }}')">
               {% else %}
-              <input type="checkbox" class="checkbox" name="enabled" id="chk{{loop.index}}" onclick="change_state('{{ meeting.id }}')" checked>
+              <input type="checkbox" class="checkbox" name="enabled" id="chk{{loop.index}}" onclick="post_to('change_state','{{ meeting.id }}')" checked>
               {% endif %}
               <label class="label" for="chk{{loop.index}}">
                   <div class="ball"></div>
@@ -129,26 +134,23 @@
 
 {% block script %}
 <script>
-  var script = document.createElement('script');
-  script.src = 'https://code.jquery.com/jquery-3.4.1.min.js';
-  script.type = 'text/javascript';
-  document.getElementsByTagName('head')[0].appendChild(script);
-
-$(function(){
-  $('.daybutton').popover({
-    html : true,
-    trigger: 'focus',
-    placement: 'bottom',
-    content: function() {
-      return $(this).next('#popover_content_wrapper').html();
-    }
+  $(function(){
+    $('.daybutton').popover({
+      html : true,
+      trigger: 'focus',
+      placement: 'bottom',
+      content: function() {
+        return $(this).next('#popover_content_wrapper').html();
+      }
+    })
   })
-})
 
-  function change_state(id){
-    $.post(`/${id}/change_state`);
+  function post_to(link, id){
+    $.post(`/${id}/${link}`);
+    console.log(`/${id}/${link}`);
     return false;
   }
+
   function copylink(link) {
     const el = document.createElement('textarea');
     el.value = link;
