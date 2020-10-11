@@ -66,11 +66,11 @@
                 <polygon points="4,4 4,36 36,20" style="fill:green;stroke-width:3"/>
               </svg>
             </a>
-          </td>  
+          </td>
           <td>{{ meeting.name }}</td>
           <td class="text">
             {% for i in range(7) %}
-            <span>
+            <span title="{%for j in meeting.triggers_by_day()[i-1][2]%}{{j[1]+'\n'}}{%endfor%}">
               <svg width="30" height="30">
                 <circle cx="50%" cy="50%" r="13" fill="{{'gray' if meeting.triggers_by_day()[(i-1)%7][2] else 'lightgray'}}" stroke="#007bff" stroke-width="{{'3' if meeting.triggers_by_day()[(i-1)%7][1] else '0'}}"/>
                 <text x="50%" y="50%" class="text" text-anchor="middle" alignment-baseline="central">{{meeting.triggers_by_day()[(i-1)%7][0]}}</text>
