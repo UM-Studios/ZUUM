@@ -5,7 +5,7 @@
         <input class="h2 taskname" type="text" name="meeting_name" value="{{ task.name }}">
         <br>
         <label>Link: </label>
-        <input type="text" name="meeting_link" value="{{ task.browser_link() }}" pattern="{{ task.browser_re }}">
+        <input type="text" name="meeting_link" value="{{ task.browser_link() }}" pattern="{{ task.browser_re }}" oninvalid="setCustomValidity('Invalid Zoom link')">
         <br>
         <h4>Add Run Time</h4>
         <label>Every </label>
