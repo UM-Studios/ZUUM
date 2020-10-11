@@ -84,7 +84,7 @@ class Trigger(CronTrigger):
     def formatted_day_time(self):
         return f'{weekdays[self.day]} at {self.time.strftime("%I:%M %p").lstrip("0")}'
     def formatted_time(self):
-        return self.time.strftime('%H:%M')
+        return self.time.strftime("%I:%M %p").lstrip("0")
     def formatted_day(self):
         return weekdays[self.day]
 
@@ -209,7 +209,7 @@ class Task:
     def triggers_by_day(self):
         d = [[Task.daynames[i],False,[]] for i in range(7)]
         for trigger in self.triggers:
-            if self.next_fire() and self.next_fire().weekday() == trigger.day:
+            if self.next_fire() and self.next_fire() == trigger.get_next_fire_time(None, datetime.now()):
                 next = True
                 d[trigger.day][1] = True
             else:
@@ -217,6 +217,8 @@ class Task:
             add = (next, trigger.formatted_time())
             if trigger.time:
                 d[trigger.day][2].append(add)
+        for day in d:
+            day[2] = sorted(day[2], key=lambda d:d[1])
         return d
     @staticmethod
     def get_task_list(scheduler, jobstore = 'default'):

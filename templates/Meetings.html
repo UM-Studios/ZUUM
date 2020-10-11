@@ -18,6 +18,9 @@
 .daybutton.off {
   background-color: rgb(221, 221, 221);
 }
+.trigger.next {
+  font-weight: 1000;
+}
 </style>
 {% endblock stylesheet %}
 
@@ -96,7 +99,7 @@
               </button>
               <div id="popover_content_wrapper" style="display: none">
                 {% for j in meeting.triggers_by_day()[(i-1)%7][2] %}
-                  <div>{{j[1]}}</div>
+                  <div class="trigger{{' next' if j[0]}}">{{j[1]}}</div>
                 {% endfor %}
               </div>
             {% endfor %}

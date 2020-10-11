@@ -130,7 +130,7 @@ def edit_task(id):
 def run_task(id):
     task = Task.get_task_list(scheduler)[id]
     scheduler.run_job(task.id, 'default')
-    #print(task.triggers_by_day())
+    print(task.triggers_by_day())
     flash("Running Task", "info")
     return redirect(url_for('meetings'))
 
