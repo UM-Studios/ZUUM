@@ -70,12 +70,15 @@
           <td>{{ meeting.name }}</td>
           <td class="text">
             {% for i in range(7) %}
-            <span title="{%for j in meeting.triggers_by_day()[i-1][2]%}{{j[1]+'\n'}}{%endfor%}">
-              <svg width="30" height="30">
-                <circle cx="50%" cy="50%" r="13" fill="{{'gray' if meeting.triggers_by_day()[(i-1)%7][2] else 'lightgray'}}" stroke="#007bff" stroke-width="{{'3' if meeting.triggers_by_day()[(i-1)%7][1] else '0'}}"/>
-                <text x="50%" y="50%" class="text" text-anchor="middle" alignment-baseline="central">{{meeting.triggers_by_day()[(i-1)%7][0]}}</text>
-              </svg>
-            </span>
+              <button type="button" class="btn btn-circle danger" data-toggle="popover" title="Popover title">
+                {{meeting.triggers_by_day()[(i-1)%7][0]}}
+              </button>
+              <div id="popover_content_wrapper" style="display: none">
+                {% for j in meeting.triggers_by_day()[(i-1)%7][2] %}
+                  <div>{{j[1]}}</div>
+                  <br>
+                {% endfor %}
+              </div>
             {% endfor %}
           <!--<td class="centered">
             <a class="btn btn-primary btn-sm option-button" href="{{ url_for('edit_task', id=meeting.id) }}">Edit</a>
@@ -116,7 +119,7 @@ $(function(){
   $('.danger').popover({ 
     html : true,
     content: function() {
-      return $('#popover_content_wrapper').html();
+      return $(this).next('#popover_content_wrapper').html();
     }
   })
 })
