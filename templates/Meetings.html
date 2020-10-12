@@ -21,21 +21,24 @@
 .trigger.next {
   font-weight: 1000;
 }
-.arrow {
+.arr {
   border: solid black;
   border-width: 0 3px 3px 0;
   display: inline-block;
   padding: 3px;
+  width: 15px;
+  height: 15px;
 }
-
-.arrow-up {
+.arr-up {
   transform: rotate(-135deg);
   -webkit-transform: rotate(-135deg);
 }
-
-.arrow-down {
+.arr-down {
   transform: rotate(45deg);
   -webkit-transform: rotate(45deg);
+}
+.arr-disabled {
+  opacity: 20%;
 }
 </style>
 {% endblock stylesheet %}
@@ -100,9 +103,9 @@
       {% for meeting in meetings.values() %}
         <tr>
           <td>
-            <i class="arrow arrow-up" id="up{{loop.index}}" data-index={{loop.index}}></i>
+            <i class="arr arr-up arr-disabled" id="up{{loop.index}}" data-index={{loop.index}}></i>
             <br>
-            <i class="arrow arrow-down" id="down{{loop.index}}" data-index={{loop.index}}></i>
+            <i class="arr arr-down arr-disabled" id="down{{loop.index}}" data-index={{loop.index}}></i>
             </td>
           <td class="centered">
             <!--<a class="btn btn-primary btn-sm option-button" href="{{ url_for('run_task', id=meeting.id) }}">Run Now</a>-->
@@ -193,25 +196,41 @@
     replace.attr('data-index', index)
     move.attr('data-index', other)
   }
+
+  function refresh() {
+    _top = $('[id^="up"][data-index=1]')
+    nottop = $('[id^="up"]:not([data-index=1])')
+    bottom = $('[id^="down"][data-index={{meetings|length}}]')
+    notbottom = $('[id^="down"]:not([data-index={{meetings|length}}])')
+    _top.addClass('arr-disabled')
+    bottom.addClass('arr-disabled')
+    nottop.removeClass('arr-disabled')
+    notbottom.removeClass('arr-disabled')
+    /*_top.hide()
+    nottop.show()
+    bottom.hide()
+    notbottom.show()*/
+  }
+  
   $(document).ready(function(){
     {% for meeting in meetings.values() %}
-    $('#up{{loop.index}}').click(function(){
-        let index = $(this).attr('data-index');
-        shift_task('{{meeting.id}}', index, -1)
-    });
-    $('#down{{loop.index}}').click(function(){
-        let index = $(this).attr('data-index');
-        shift_task('{{meeting.id}}', index, 1)
-        /*other = parseInt(index)+1
-        let replacetr = $("tr").has("i[data-index="+ other +"]")
-        let replace = $("i[data-index="+ other +"]")
-        let movetr = $("tr").has("i[data-index="+ index +"]")
-        let move = $("i[data-index="+ index +"]")
-        movetr.insertAfter(replacetr)
-        replace.attr('data-index', index)
-        move.attr('data-index', other)*/
-    });
+      $('#up{{loop.index}}').click(function(){
+        if (!($(this).hasClass('arr-disabled'))) {
+          let index = $(this).attr('data-index');
+          shift_task('{{meeting.id}}', index, -1)
+          refresh()
+        }
+      });
+      $('#down{{loop.index}}').click(function(){
+        if (!($(this).hasClass('arr-disabled'))) {
+          let index = $(this).attr('data-index');
+          shift_task('{{meeting.id}}', index, 1)
+          refresh()
+        }
+      });
     {%endfor%}
+    $('arr-disabled').off('click')
+    refresh()
 });
 </script>
 {% endblock script %}
