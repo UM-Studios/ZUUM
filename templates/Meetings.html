@@ -12,11 +12,14 @@
   border-color: #007bff;
   border-width: 3px;
 }
-.daybutton.on {
+.daybutton:not(:disabled) {
   background-color: rgb(180, 180, 180);
+  
 }
-.daybutton.off {
+.daybutton:disabled {
   background-color: rgb(221, 221, 221);
+  opacity:100%;
+  color: black;
 }
 .trigger.next {
   font-weight: 1000;
@@ -39,6 +42,17 @@
 }
 .arr-disabled {
   opacity: 20%;
+}
+.list-group-item-light {
+  color: #000000;
+}
+.list-group-item-light.list-group-item-action:hover, .list-group-item-light.list-group-item-action:focus {
+  color: #000000;
+}
+.list-group-item-light.list-group-item-action.active {
+  color: #ffffff;
+  background-color: #9e9e9e;
+  border-color: #9e9e9e;
 }
 </style>
 {% endblock stylesheet %}
@@ -118,7 +132,7 @@
           <td>{{ meeting.name }}</td>
           <td class="text">
             {% for i in range(7) %}
-              <button type="button" class="btn daybutton{{' next' if meeting.triggers_by_day()[(i-1)%7][1] }}{{' on' if meeting.triggers_by_day()[(i-1)%7][2] else ' off'}}" data-toggle="popover" title="{{meeting.triggers_by_day()[(i-1)%7][0]}}">
+              <button type="button" class="btn daybutton{{' next' if meeting.triggers_by_day()[(i-1)%7][1] }}" data-toggle="popover" title="{{meeting.triggers_by_day()[(i-1)%7][0]}}" {{"disabled" if not meeting.triggers_by_day()[(i-1)%7][2]}}>
                 {{meeting.triggers_by_day()[(i-1)%7][0][0]}}
               </button>
               <div id="popover_content_wrapper" style="display: none">
@@ -127,11 +141,9 @@
                 {% endfor %}
               </div>
             {% endfor %}
-          <!--<td class="centered">
-            <a class="btn btn-primary btn-sm option-button" href="{{ url_for('edit_task', id=meeting.id) }}">Edit</a>
-            <br>
-            <a class="btn btn-daybutton btn-sm option-button" href="{{ url_for('delete_task', id=meeting.id) }}">Delete</a>
-          </td>-->
+          <td class="centered">
+            <button class="btn btn-primary btn-sm option-button" id="edit{{ meeting.id }}" data-toggle="modal" data-target="#edit_task_modal">Edit</button>
+          </td>
           <td>
             <div>
               {% if meeting.enabled %}
@@ -151,10 +163,80 @@
 
 {% endblock content %}
 
+{% block modal %}
+<div class="modal fade" id="edit_task_modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="edit_task_modal_title">Edit Meeting</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="edit_task_form">
+          <div class="form-group">
+            <div class="input-group mb-3">
+              <div class="input-group-prepend">
+                <span class="input-group-text" style="width: 4rem">Name</span>
+              </div>
+              <input type="text" class="form-control" id="meeting_name" name="meeting_name">
+            </div>
+            <div class="input-group mb-3">
+              <div class="input-group-prepend">
+                <span class="input-group-text" style="width: 4rem">Link</span>
+              </div>
+              <input type="text" class="form-control" id="meeting_link" name="meeting_link" pattern="{{ linkre }}" oninvalid="setCustomValidity('Invalid Zoom link')">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="triggers" class="col-form-label">Run Times: </label>
+            <div class="row">
+              <div class="col-4">
+                <div class="list-group" id="days-list-tab" role="tablist">
+                </div>
+                <a class="list-group-item list-group-item-action list-group-item-light" id="day-template" data-toggle="list" role="tab" style="display: none"></a>
+                <span class="badge badge-primary badge-pill" id="pill-template" style="float: right"></span>
+              </div>
+              <div class="col-4">
+                <div class="tab-content" id="day-content">
+                </div>
+                <div class="tab-pane fade" id="list-template" role="tabpanel">
+                  <div id="addtrigger">
+                    <div class="input-group mb-3">
+                      <input type="time">
+                      <div class="input-group-append">
+                        <button class="btn btn-outline-secondary" type="button" id="button-addon2">Add</button>
+                      </div>
+                    </div>
+                  </div>
+                  <hr>
+                </div>
+                <div id="time-template" style="display: none">
+                  <input class="times" type="time">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button class="btn btn-primary" id="submit-form">Save Changes</button>
+            <!--<input type="submit" class="btn btn-primary" name="submit" id="submit-form" value="Save Changes">-->
+          </div>
+          <input type="hidden" name="trigger-data" id="trigger-data">
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock modal %}
+
 {% block script %}
 <script>
+  const daynames = new Map([[6, "Sunday"], [0, "Monday"], [1, "Tuesday"], [2, "Wednesday"], [3, "Thursday"], [4, "Friday"], [5, "Saturday"]])
+
   $(function(){
-    $('.daybutton').popover({
+    $('.daybutton:not(.disabled)').popover({
       html : true,
       trigger: 'focus',
       placement: 'bottom',
@@ -162,7 +244,101 @@
         return $(this).next('#popover_content_wrapper').html();
       }
     })
+    {% for meeting in meetings.values() %}
+      $('#up{{loop.index}}').click(function(){
+        if (!($(this).hasClass('arr-disabled'))) {
+          let index = $(this).attr('data-index');
+          shift_task('{{meeting.id}}', index, -1)
+          refresh()
+        }
+      })
+      $('#down{{loop.index}}').click(function(){
+        if (!($(this).hasClass('arr-disabled'))) {
+          let index = $(this).attr('data-index');
+          shift_task('{{meeting.id}}', index, 1)
+          refresh()
+        }
+      })
+    {% endfor %}
+    $('arr-disabled').off('click')
+    refresh()
+    
+    set_edit_data()
+
+    /*day names in modal*/
+    /*for (day of daynames) {
+      var template = document.getElementById("day-template")
+      var day_item = template.cloneNode(true)
+      day_item.id = "list-"+day[1]+"-list"
+      day_item.href = "#list-"+day[1]
+      day_item.style.display = "block"
+      day_item.text = day[1]
+      document.getElementById("days-list-tab").appendChild(day_item)
+    }*/
+
+    /*show modal*/
+    $('#edit_task_modal').on('show.bs.modal', function (event) {
+      var button = $(event.relatedTarget)
+      var id = button.data('id')
+      var meetingname = button.data('name')
+      var meetinglink = button.data('link')
+      var triggers = button.data('triggers')
+      var modal = $(this)
+      /*modal.find('#edit_task_form').attr('action', '/'+id+'/edit_task')*/
+      modal.find('.modal-title').text('Edit Meeting: ' + meetingname)
+      modal.find('.modal-body #meeting_link').val(meetinglink)
+      modal.find('.modal-body #meeting_name').val(meetingname)
+      modal.find('#submit-form').attr('action', '/'+id+'/edit_task')
+
+      for (day of daynames) {
+        //day names
+        var daytemplate = document.getElementById("day-template")
+        var day_item = daytemplate.cloneNode(true)
+        var pill = document.getElementById("pill-template").cloneNode(true)
+        day_item.id = "list-"+day[1]+"-list"
+        day_item.href = "#list-"+day[1]
+        day_item.style.display = "block"
+        day_item.text = day[1]
+        if (triggers[day[0]][2].length > 0) {
+          pill.textContent = triggers[day[0]][2].length
+          day_item.append(pill)
+        }
+        document.getElementById("days-list-tab").appendChild(day_item)
+        //lists of triggers
+        var listtemplate = document.getElementById("list-template")
+        var list = listtemplate.cloneNode(true)
+        list.id = "list-"+day[1]
+        for (trigger of triggers[day[0]][2]) {
+          timetemplate = document.getElementById("time-template")
+          time = timetemplate.cloneNode(true)
+          time.children[0].setAttribute('value', trigger[2])
+          time.removeAttribute('style')
+          list.appendChild(time)
+        }
+        modal.find('#day-content')
+        modal.find('#day-content').append(list)
+        console.log(modal.find('#day-content').html())
+      }
+    })
+    $('#edit_task_modal').on('hidden.bs.modal', function () {
+      var modal = $(this)
+      modal.find('#day-content').html('')
+      modal.find("#days-list-tab").html('')
+      //$(".list-group-item").removeClass('active')
+      
+    });
   })
+
+  function update_trigger_data() {
+
+  }
+
+  function htmlDecode(input){
+    var e = document.createElement('textarea');
+    e.innerHTML = input;
+    // handle case of empty input
+    return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
+  }
 
   function post_to(link, id){
     $.post(`/${id}/${link}`);
@@ -206,31 +382,18 @@
     bottom.addClass('arr-disabled')
     nottop.removeClass('arr-disabled')
     notbottom.removeClass('arr-disabled')
-    /*_top.hide()
-    nottop.show()
-    bottom.hide()
-    notbottom.show()*/
   }
-  
-  $(document).ready(function(){
+
+  function set_edit_data() {
+    var meetingArray = new Array()
+    var meeting = {}
     {% for meeting in meetings.values() %}
-      $('#up{{loop.index}}').click(function(){
-        if (!($(this).hasClass('arr-disabled'))) {
-          let index = $(this).attr('data-index');
-          shift_task('{{meeting.id}}', index, -1)
-          refresh()
-        }
-      });
-      $('#down{{loop.index}}').click(function(){
-        if (!($(this).hasClass('arr-disabled'))) {
-          let index = $(this).attr('data-index');
-          shift_task('{{meeting.id}}', index, 1)
-          refresh()
-        }
-      });
-    {%endfor%}
-    $('arr-disabled').off('click')
-    refresh()
-});
+      meeting = {id: '{{meeting.id}}', name: '{{meeting.name}}', link: htmlDecode('{{meeting.browser_link()}}'), triggers: {{meeting.triggers_by_day() | tojson}}}
+      meetingArray.push(meeting)
+    {% endfor %}
+    for (var i = 0; i < meetingArray.length; i++){
+      $('#edit'+meetingArray[i].id).data(meetingArray[i])
+    }
+  }
 </script>
 {% endblock script %}

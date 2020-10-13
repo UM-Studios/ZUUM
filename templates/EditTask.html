@@ -44,7 +44,7 @@
                 <option value="Sunday">Sunday</option>
             </select>
             <label> at </label>
-            <input class="times" type="time" name="time{{ loop.index }}" value="{{ trigger.formatted_time() }}">
+            <input class="times" type="time" name="time{{ loop.index }}" value="{{ trigger.military_time() }}">
             <br>
         {% endfor %}
         <br>

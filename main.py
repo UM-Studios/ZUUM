@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 from flaskwebgui import FlaskUI
 from datetime import datetime
 import hashlib
+import json
 
 import rpyc
 
@@ -59,7 +60,7 @@ def calendar():
 
 @app.route("/meetings")
 def meetings():
-    return render_template('Meetings.html', meetings = Task.get_task_list(scheduler))
+    return render_template('Meetings.html', meetings = Task.get_task_list(scheduler), linkre = Task.browser_re)
 
 @app.route("/new_meeting", methods=["GET", "POST"])
 def new_meeting():
@@ -79,6 +80,9 @@ def edit_task(id):
     if task == False:
         flash("That task doesn't exist", "info")
     elif request.method == "POST":
+        data = request.get_json()
+        print(data)
+        """
         if request.form['action'] == "+":
             changes['triggers'] = task.triggers
             day = request.form['trigger_day']
@@ -124,13 +128,15 @@ def edit_task(id):
             task.configure(scheduler, **changes)
             flash("Meeting Updated", "success")
         return redirect(url_for('edit_task', id=task.id))
+        """
     return render_template('EditTask.html', task=task)
 
 @app.route("/<string:id>/run_task", methods=["GET","POST"])
 def run_task(id):
     task = Task.get_task_list(scheduler)[id]
-    scheduler.run_job(task.id, 'default')
-    print(task.get_task_list(scheduler).print_tasks())
+    #scheduler.run_job(task.id, 'default')
+    #print(task.get_task_list(scheduler).print_tasks())
+    print(url_for('edit_task', id=task.id))
     flash("Running Task", "info")
     return redirect(url_for('meetings'))
 

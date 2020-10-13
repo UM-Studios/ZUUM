@@ -87,6 +87,8 @@ class Trigger(CronTrigger):
         return f'{weekdays[self.day]} at {self.time.strftime("%I:%M %p").lstrip("0")}'
     def formatted_time(self):
         return self.time.strftime("%I:%M %p").lstrip("0")
+    def military_time(self):
+        return self.time.strftime("%H:%M")
     def formatted_day(self):
         return weekdays[self.day]
 
@@ -220,7 +222,7 @@ class Task:
                 d[trigger.day][1] = True
             else:
                 next = False
-            add = (next, trigger.formatted_time())
+            add = (next, trigger.formatted_time(), trigger.military_time())
             if trigger.time:
                 d[trigger.day][2].append(add)
         for day in d:
