@@ -54,6 +54,9 @@
   background-color: #9e9e9e;
   border-color: #9e9e9e;
 }
+.actuallynofade{
+  transition: none;
+}
 </style>
 {% endblock stylesheet %}
 
@@ -201,19 +204,24 @@
               <div class="col-4">
                 <div class="tab-content" id="day-content">
                 </div>
-                <div class="tab-pane fade" id="list-template" role="tabpanel">
+                <div class="tab-pane fade actuallynofade" id="list-template" role="tabpanel">
                   <div id="addtrigger">
-                    <div class="input-group mb-3">
+                    <div class="input-group mb-2">
                       <input type="time">
                       <div class="input-group-append">
-                        <button class="btn btn-outline-secondary" type="button" id="button-addon2">Add</button>
+                        <button class="btn btn-outline-secondary" type="button" id="addtrigger-button">+</button>
                       </div>
                     </div>
                   </div>
                   <hr>
                 </div>
                 <div id="time-template" style="display: none">
-                  <input class="times" type="time">
+                  <div class="input-group mb-2">
+                    <input type="time">
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-danger" type="button" id="deletetrigger-button">−</button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -241,20 +249,20 @@
       trigger: 'focus',
       placement: 'bottom',
       content: function() {
-        return $(this).next('#popover_content_wrapper').html();
+        return $(this).next('#popover_content_wrapper').html()
       }
     })
     {% for meeting in meetings.values() %}
       $('#up{{loop.index}}').click(function(){
         if (!($(this).hasClass('arr-disabled'))) {
-          let index = $(this).attr('data-index');
+          let index = $(this).attr('data-index')
           shift_task('{{meeting.id}}', index, -1)
           refresh()
         }
       })
       $('#down{{loop.index}}').click(function(){
         if (!($(this).hasClass('arr-disabled'))) {
-          let index = $(this).attr('data-index');
+          let index = $(this).attr('data-index')
           shift_task('{{meeting.id}}', index, 1)
           refresh()
         }
@@ -264,17 +272,6 @@
     refresh()
     
     set_edit_data()
-
-    /*day names in modal*/
-    /*for (day of daynames) {
-      var template = document.getElementById("day-template")
-      var day_item = template.cloneNode(true)
-      day_item.id = "list-"+day[1]+"-list"
-      day_item.href = "#list-"+day[1]
-      day_item.style.display = "block"
-      day_item.text = day[1]
-      document.getElementById("days-list-tab").appendChild(day_item)
-    }*/
 
     /*show modal*/
     $('#edit_task_modal').on('show.bs.modal', function (event) {
@@ -290,34 +287,52 @@
       modal.find('.modal-body #meeting_name').val(meetingname)
       modal.find('#submit-form').attr('action', '/'+id+'/edit_task')
 
+      function getlist(template, day) {
+        //console.log(day)
+        var list = template.clone()
+        list.attr("id", "list-"+day[1])
+        //console.log(list.attr("id"))9=
+        for ([i, trigger] of triggers[day[0]][2].entries()) {
+          //console.log(trigger[2])
+          timetemplate = modal.find("#time-template")
+          time = timetemplate.clone()
+          time.attr("id", "trigger-wrapper-"+i)
+          time.find("input").attr("value", trigger[2])
+          time.find("#deletetrigger-button").attr("id", "deletetrigger-button-"+i)
+          time.removeAttr('style')
+          list.append(time)
+        }
+        return list
+      }
+
       for (day of daynames) {
         //day names
-        var daytemplate = document.getElementById("day-template")
-        var day_item = daytemplate.cloneNode(true)
-        var pill = document.getElementById("pill-template").cloneNode(true)
-        day_item.id = "list-"+day[1]+"-list"
-        day_item.href = "#list-"+day[1]
-        day_item.style.display = "block"
-        day_item.text = day[1]
+        var daytemplate = modal.find("#day-template")
+        var day_item = daytemplate.clone()
+        var pill = modal.find("#pill-template").clone()
+        day_item.attr("id", "list-"+day[1]+"-list")
+        day_item.attr("href", "#list-"+day[1])
+        day_item.css("display", "block")
+        day_item.text(day[1])
         if (triggers[day[0]][2].length > 0) {
-          pill.textContent = triggers[day[0]][2].length
+          pill.text(triggers[day[0]][2].length)
           day_item.append(pill)
         }
-        document.getElementById("days-list-tab").appendChild(day_item)
-        //lists of triggers
-        var listtemplate = document.getElementById("list-template")
-        var list = listtemplate.cloneNode(true)
-        list.id = "list-"+day[1]
-        for (trigger of triggers[day[0]][2]) {
-          timetemplate = document.getElementById("time-template")
-          time = timetemplate.cloneNode(true)
-          time.children[0].setAttribute('value', trigger[2])
-          time.removeAttribute('style')
-          list.appendChild(time)
-        }
-        modal.find('#day-content')
+        $("#days-list-tab").append(day_item)
+
+        list = getlist(modal.find("#list-template"), day)
+
+        addbutton = list.find('#addtrigger-button')
+        addbutton.attr('id', "addtrigger-button-"+day[1])
+        addbutton.data('triggers', triggers[day[0]])
+        console.log(addbutton.data('triggers'))
+        addbutton.click( function() {
+          //refresh list
+          temp = modal.find('#day-content').remove
+          modal.find('#day-content').html()
+        })
+        //console.log(addbutton.data())
         modal.find('#day-content').append(list)
-        console.log(modal.find('#day-content').html())
       }
     })
     $('#edit_task_modal').on('hidden.bs.modal', function () {
@@ -325,8 +340,11 @@
       modal.find('#day-content').html('')
       modal.find("#days-list-tab").html('')
       //$(".list-group-item").removeClass('active')
-      
-    });
+    })
+  })
+
+  $("#addtrigger-button").click( function() {
+    
   })
 
   function update_trigger_data() {
@@ -334,25 +352,25 @@
   }
 
   function htmlDecode(input){
-    var e = document.createElement('textarea');
-    e.innerHTML = input;
+    var e = document.createElement('textarea')
+    e.innerHTML = input
     // handle case of empty input
-    return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
+    return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue
   }
 
   function post_to(link, id){
-    $.post(`/${id}/${link}`);
-    console.log(`/${id}/${link}`);
-    return false;
+    $.post(`/${id}/${link}`)
+    console.log(`/${id}/${link}`)
+    return false
   }
 
   function copylink(link) {
-    const el = document.createElement('textarea');
-    el.value = link;
-    document.body.appendChild(el);
-    el.select();
-    document.execCommand('copy');
-    document.body.removeChild(el);
+    const el = document.createElement('textarea')
+    el.value = link
+    document.body.appendChild(el)
+    el.select()
+    document.execCommand('copy')
+    document.body.removeChild(el)
   }
 
   function shift_task(id, index, direction) {
