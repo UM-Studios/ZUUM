@@ -207,7 +207,7 @@
                 <div class="tab-pane fade actuallynofade" id="list-template" role="tabpanel">
                   <div id="addtrigger">
                     <div class="input-group mb-2">
-                      <input type="time">
+                      <input type="time" id="newtrigger">
                       <div class="input-group-append">
                         <button class="btn btn-outline-secondary" type="button" id="addtrigger-button">+</button>
                       </div>
@@ -242,8 +242,11 @@
 {% block script %}
 <script>
   const daynames = new Map([[6, "Sunday"], [0, "Monday"], [1, "Tuesday"], [2, "Wednesday"], [3, "Thursday"], [4, "Friday"], [5, "Saturday"]])
+  
+  
 
   $(function(){
+    
     $('.daybutton:not(.disabled)').popover({
       html : true,
       trigger: 'focus',
@@ -279,19 +282,19 @@
       var id = button.data('id')
       var meetingname = button.data('name')
       var meetinglink = button.data('link')
-      var triggers = button.data('triggers')
       var modal = $(this)
+      var triggers = modal.find('#trigger-data').data(button.data('triggers')).data()
+
       /*modal.find('#edit_task_form').attr('action', '/'+id+'/edit_task')*/
       modal.find('.modal-title').text('Edit Meeting: ' + meetingname)
       modal.find('.modal-body #meeting_link').val(meetinglink)
       modal.find('.modal-body #meeting_name').val(meetingname)
       modal.find('#submit-form').attr('action', '/'+id+'/edit_task')
 
-      function getlist(template, day) {
+      function getlist(day) {
         //console.log(day)
-        var list = template.clone()
-        list.attr("id", "list-"+day[1])
-        //console.log(list.attr("id"))9=
+        var list = $(document.createElement('div'))
+        //console.log(list.attr("id"))
         for ([i, trigger] of triggers[day[0]][2].entries()) {
           //console.log(trigger[2])
           timetemplate = modal.find("#time-template")
@@ -305,35 +308,60 @@
         return list
       }
 
+      function updatepills() {
+        $('[id^=pill-]').filter( function() {
+        return !(parseInt($(this).text()) > 0)
+      }).css('display', 'none')
+      }
+      
       for (day of daynames) {
         //day names
         var daytemplate = modal.find("#day-template")
         var day_item = daytemplate.clone()
-        var pill = modal.find("#pill-template").clone()
         day_item.attr("id", "list-"+day[1]+"-list")
         day_item.attr("href", "#list-"+day[1])
         day_item.css("display", "block")
         day_item.text(day[1])
-        if (triggers[day[0]][2].length > 0) {
-          pill.text(triggers[day[0]][2].length)
-          day_item.append(pill)
-        }
+
+        pill = modal.find("#pill-template").clone()
+        pill.attr('id', 'pill-'+day[1])
+        pill.text(triggers[day[0]][2].length)
+        day_item.append(pill)
+
         $("#days-list-tab").append(day_item)
 
-        list = getlist(modal.find("#list-template"), day)
+
+        list = modal.find("#list-template").clone()
+        list.attr("id", "list-"+day[1])
+        list.append(getlist(day).children())
 
         addbutton = list.find('#addtrigger-button')
         addbutton.attr('id', "addtrigger-button-"+day[1])
+        addbutton.data('day', day)
         addbutton.data('triggers', triggers[day[0]])
-        console.log(addbutton.data('triggers'))
-        addbutton.click( function() {
+        addbutton.on('click', function(event) {
+          day = $(this).data('day')
+          newtrigger = modal.find('#list-'+day[1]).find('#newtrigger').val()
+          if (!newtrigger) {
+            console.log('finishing entering stuff pls')
+            return
+          }
+          triggers[day[0]][2].push([null, null, newtrigger])
+          console.log(triggers[day[0]][2])
+          triggers[day[0]][2].sort(function (a, b) {
+            return new Date('1970/01/01 ' + a[2]) - new Date('1970/01/01 ' + b[2]);
+          });
           //refresh list
-          temp = modal.find('#day-content').remove
-          modal.find('#day-content').html()
+          modal.find('#pill-'+day[1]).text(triggers[day[0]][2].length)
+          updatepills()
+          modal.find('#day-content #list-'+day[1]+' [id^=trigger-wrapper]').remove()
+          modal.find('#day-content #list-'+day[1]).append(getlist(day).children())
+          return
         })
         //console.log(addbutton.data())
         modal.find('#day-content').append(list)
       }
+      updatepills()
     })
     $('#edit_task_modal').on('hidden.bs.modal', function () {
       var modal = $(this)
@@ -346,7 +374,8 @@
   $("#addtrigger-button").click( function() {
     
   })
-
+  
+  
   function update_trigger_data() {
 
   }
