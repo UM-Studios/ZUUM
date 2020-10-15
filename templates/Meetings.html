@@ -177,7 +177,7 @@
         </button>
       </div>
       <div class="modal-body">
-        <form id="edit_task_form">
+        <form id="edit_task_form" method="POST">
           <div class="form-group">
             <div class="input-group mb-3">
               <div class="input-group-prepend">
@@ -228,7 +228,7 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            <button class="btn btn-primary" id="submit-form">Save Changes</button>
+            <button class="btn btn-primary" id="submit-form" type="submit">Save Changes</button>
             <!--<input type="submit" class="btn btn-primary" name="submit" id="submit-form" value="Save Changes">-->
           </div>
           <input type="hidden" name="data" id="data">
@@ -277,18 +277,20 @@
     set_edit_data()
 
     /*show modal*/
-    $('#edit_task_modal').on('show.bs.modal', function (event) {
+    $('#edit_task_modal').on('show.bs.modal', function (event) {       
       button = $(event.relatedTarget)
       modal = $(this)
       data = new Object()
       $.extend(true, data, button.data())
       modal.find('#data').data(data)
 
+      modal.find('#edit_task_form').attr('action', data['url'])
+
       /*modal.find('#edit_task_form').attr('action', '/'+id+'/edit_task')*/
       modal.find('.modal-title').text('Edit Meeting: ' + data['name'])
       modal.find('.modal-body #meeting_link').val(data['link'])
       modal.find('.modal-body #meeting_name').val(data['name'])
-      modal.find('#submit-form').attr('action', '/'+data['id']+'/edit_task')
+      //modal.find('#submit-form').attr('action', '/'+data['id']+'/edit_task')
 
       function getlist(day) {
         var list = $(document.createElement('div'))
@@ -375,16 +377,17 @@
       }
       updatepills()
     })
-    $('#edit_task_modal').on('hidden.bs.modal', function () {
+    $('#edit_task_modal').on('hidden.bs.modal', function() {
       var modal = $(this)
       modal.find('#day-content').html('')
       modal.find("#days-list-tab").html('')
     })
+    $('#edit_task_form').submit( function(event) {
+      data = $(this).find('#data').data()
+      $(this).find('#data').attr('value', JSON.stringify(data))
+    })
   })
 
-  function update_trigger_data() {
-
-  }
 
   function htmlDecode(input){
     var e = document.createElement('textarea')
@@ -439,7 +442,7 @@
     var meetingArray = new Array()
     var meeting = {}
     {% for meeting in meetings.values() %}
-      meeting = {id: '{{meeting.id}}', name: '{{meeting.name}}', link: htmlDecode('{{meeting.browser_link()}}'), triggers: {{meeting.triggers_by_day() | tojson}}}
+      meeting = {url: '{{ url_for("edit_task", id=meeting.id) }}', id: '{{meeting.id}}', name: '{{meeting.name}}', link: htmlDecode('{{meeting.browser_link()}}'), triggers: {{meeting.triggers_by_day() | tojson}}}
       meetingArray.push(meeting)
     {% endfor %}
     for (var i = 0; i < meetingArray.length; i++){

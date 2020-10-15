@@ -1,4 +1,4 @@
-from APSched import Task, Trigger, TaskList, weeknums
+from APSched import Task, Trigger, TaskList, weeknums, tree_print
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flaskwebgui import FlaskUI
 from datetime import datetime
@@ -75,13 +75,26 @@ def new_meeting():
 
 @app.route("/<string:id>/edit_task", methods=["GET", "POST"])
 def edit_task(id):
+    print('hello')
     task = Task.get_task_list(scheduler)[id]
     changes = dict.fromkeys(('name', 'link', 'triggers', 'enabled'))
     if task == False:
         flash("That task doesn't exist", "info")
     elif request.method == "POST":
-        data = request.get_json()
-        print(data)
+        data = json.loads(request.form['data'])
+        #print(data)
+        changes['name'] = request.form['meeting_name']
+        changes['link'] = request.form['meeting_link']
+        for day in data['triggers']:
+            for trigger in day[2]:
+                hour, minute = trigger[2].split(":")
+                try:
+                    changes['triggers'].append(Trigger(day_of_week=weeknums[day[0]], hour=int(hour), minute=int(minute)))
+                except AttributeError:
+                    changes['triggers'] = [Trigger(day_of_week=weeknums[day[0]], hour=int(hour), minute=int(minute))]
+        task.configure(scheduler, **changes)
+        flash("Meeting Updated", "success")
+        #tree_print(changes, 0)
         """
         if request.form['action'] == "+":
             changes['triggers'] = task.triggers
@@ -129,7 +142,7 @@ def edit_task(id):
             flash("Meeting Updated", "success")
         return redirect(url_for('edit_task', id=task.id))
         """
-    return render_template('EditTask.html', task=task)
+    return redirect(url_for('meetings'))
 
 @app.route("/<string:id>/run_task", methods=["GET","POST"])
 def run_task(id):
