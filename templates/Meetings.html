@@ -57,6 +57,13 @@
 .actuallynofade {
   transition: none;
 }
+input[id^=chk]:disabled+label{
+  cursor: default;
+  background-color: #9e9e9e;
+}
+input[id^=chk]:disabled + .label .ball{
+  transform: translateX(7.5px);
+}
 </style>
 {% endblock stylesheet %}
 
@@ -77,11 +84,7 @@
             <tr>
                 <td>
                   <div>
-                    {% if meeting.enabled %}
-                    <input type="checkbox" class="checkbox" name="enabled" id="chk{{loop.index}}" onclick="post_to('change_state','{{ meeting.id }}')">
-                    {% else %}
-                    <input type="checkbox" class="checkbox" name="enabled" id="chk{{loop.index}}" onclick="post_to('change_state','{{ meeting.id }}')" checked>
-                    {% endif %}
+                    <input type="checkbox" class="checkbox" name="enabled" id="chk{{loop.index}}" onclick="post_to('change_state','{{ meeting.id }}')"{{' disabled' if not meeting.triggers}}{{' checked' if meeting.enabled}}>
                     <label class="label" for="chk{{loop.index}}">
                         <div class="ball"></div>
                     </label>
@@ -149,12 +152,8 @@
           </td>
           <td>
             <div>
-              {% if meeting.enabled %}
-              <input type="checkbox" class="checkbox" name="enabled" id="chk{{loop.index}}" onclick="post_to('change_state','{{ meeting.id }}')">
-              {% else %}
-              <input type="checkbox" class="checkbox" name="enabled" id="chk{{loop.index}}" onclick="post_to('change_state','{{ meeting.id }}')" checked>
-              {% endif %}
-              <label class="label" for="chk{{loop.index}}">
+              <input type="checkbox" class="checkbox" name="enabled" id="chk{{loop.index}}" onclick="change_state('{{ meeting.id }}')"{{' disabled' if not meeting.triggers}}{{' checked' if meeting.enabled}}>
+              <label class="label" for="chk{{loop.index}}" id="lb-chk{{loop.index}}">
                   <div class="ball"></div>
               </label>
             </div>
@@ -358,9 +357,10 @@
         addbutton.data('triggers', data['triggers'][day[0]])
         addbutton.on('click', function() {
           day = $(this).data('day')
-          newtrigger = modal.find('#list-'+day[1]).find('.newtrigger').val()
-          if (!newtrigger) {
+          newtrigger = modal.find('#list-'+day[1]).find('.newtrigger')
+          if (!newtrigger.val()) {
             console.log('finishing entering stuff pls')
+            newtrigger.focus()
             return
           }
           data['triggers'][day[0]][2].push([null, null, newtrigger])
@@ -403,6 +403,10 @@
         meeting_name: 'Please enter a meeting name.',
         meeting_link: 'Please enter a valid Zoom link.'
       },
+      focusInvalid: false,
+      invalidHandler: function() {
+        $(this).find(":input.error:first").focus();
+      },
       showErrors: function(errorMap, errorList) {
         this.defaultShowErrors()
         if ($('#meeting_name-error:visible').length) {
@@ -430,6 +434,10 @@
     $.post(`/${id}/${link}`)
     console.log(`/${id}/${link}`)
     return false
+  }
+  
+  function change_state(id) {
+    post_to('change_state', id)
   }
 
   function copylink(link) {

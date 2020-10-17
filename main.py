@@ -78,7 +78,7 @@ def edit_task(id):
     print('hello')
     task = Task.get_task_list(scheduler)[id]
     changes = dict.fromkeys(('name', 'link', 'triggers', 'enabled'))
-    if task == False:
+    if not task:
         flash("That task doesn't exist", "info")
     elif request.method == "POST":
         data = json.loads(request.form['data'])
@@ -94,54 +94,7 @@ def edit_task(id):
                     changes['triggers'] = [Trigger(day_of_week=weeknums[day[0]], hour=int(hour), minute=int(minute))]
         task.configure(scheduler, **changes)
         flash("Meeting Updated", "success")
-        tree_print(data, 0)
-        """
-        if request.form['action'] == "+":
-            changes['triggers'] = task.triggers
-            day = request.form['trigger_day']
-            time = request.form['time']
-            if (len(time)==5):
-                hour, minute = time.split(":")
-                try:
-                    changes['triggers'].append(Trigger(day_of_week=weeknums[day], hour=int(hour), minute=int(minute)))
-                except AttributeError:
-                    changes['triggers'] = [Trigger(day_of_week=weeknums[day], hour=int(hour), minute=int(minute))]
-                task.configure(scheduler, **changes)
-                flash("Run Time Added", "success")
-            else:
-                flash("Couldn't Add Time", "danger")
-        elif request.form['action'] == "Save Changes":
-            changes['name'] = request.form['meeting_name']
-            link = request.form['meeting_link']
-            changes['link'] = link
-            #numTriggers = len(task.triggers)
-            #task.rename(name)
-            #task.id = hashlib.sha224(task.get_task_name().encode('utf-8')).hexdigest()
-            #task.set_link(link)
-
-            day = request.form['trigger_day']
-            time = request.form['time']
-            if (len(time)==5):
-                hour, minute = time.split(":")
-                try:
-                    changes['triggers'].append(Trigger(day_of_week=weeknums[day], hour=int(hour), minute=int(minute)))
-                except AttributeError:
-                    changes['triggers'] = [Trigger(day_of_week=weeknums[day], hour=int(hour), minute=int(minute))]
-            enabled = request.form.get('enabled')
-            changes['enabled'] = True if enabled == None else False
-            for i in range(0,len(task.triggers)):
-                day = request.form[f'trigger_day{i+1}']
-                time = request.form[f'time{i+1}']
-                if (len(time)==5):
-                    hour, minute = time.split(":")
-                    try:
-                        changes['triggers'].append(Trigger(day_of_week=weeknums[day], hour=int(hour), minute=int(minute)))
-                    except AttributeError:
-                        changes['triggers'] = [Trigger(day_of_week=weeknums[day], hour=int(hour), minute=int(minute))]
-            task.configure(scheduler, **changes)
-            flash("Meeting Updated", "success")
-        return redirect(url_for('edit_task', id=task.id))
-        """
+        # tree_print(data, 0)
     return redirect(url_for('meetings'))
 
 @app.route("/<string:id>/run_task", methods=["GET","POST"])
@@ -177,6 +130,7 @@ def disable_task(id):
 @app.route("/<string:id>/change_state", methods=["GET","POST"])
 def change_state(id):
     task = Task.get_task_list(scheduler)[id]
+    print(task.id)
     if task.enabled:
         task.disable(scheduler)
     else:
