@@ -54,7 +54,7 @@
   background-color: #9e9e9e;
   border-color: #9e9e9e;
 }
-.actuallynofade{
+.actuallynofade {
   transition: none;
 }
 </style>
@@ -189,7 +189,7 @@
               <div class="input-group-prepend">
                 <span class="input-group-text" style="width: 4rem">Link</span>
               </div>
-              <input type="text" class="form-control" id="meeting_link" name="meeting_link" pattern="{{ linkre }}" oninvalid="setCustomValidity('Invalid Zoom link')">
+              <input type="text" class="form-control" id="meeting_link" name="meeting_link">
             </div>
           </div>
           <div class="form-group">
@@ -227,8 +227,12 @@
             </div>
           </div>
           <div class="modal-footer">
+            <div class="float-left" id="error">
+              <div id="error-box"></div>
+            </div>
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
             <button class="btn btn-primary" id="submit-form" type="submit">Save Changes</button>
+            <!--<button class ="btn btn-secondary" id="test" onclick="testfunc()">test</button>-->  
             <!--<input type="submit" class="btn btn-primary" name="submit" id="submit-form" value="Save Changes">-->
           </div>
           <input type="hidden" name="data" id="data">
@@ -242,7 +246,9 @@
 {% block script %}
 <script>
   const daynames = new Map([[6, "Sunday"], [0, "Monday"], [1, "Tuesday"], [2, "Wednesday"], [3, "Thursday"], [4, "Friday"], [5, "Saturday"]])
-  
+  $.validator.addMethod('link', function(value) {
+    return /{{ linkre | safe }}/.test(value)
+  }, 'Invalid Zoom Link')
   
 
   $(function(){
@@ -386,6 +392,30 @@
       data = $(this).find('#data').data()
       $(this).find('#data').attr('value', JSON.stringify(data))
     })
+    $('#edit_task_form').validate({
+      rules: {
+        meeting_name: 'required',
+        meeting_link: 'link'
+      },
+      errorElement: 'div',
+      errorLabelContainer: "#error-box",
+      messages: {
+        meeting_name: 'Please enter a meeting name.',
+        meeting_link: 'Please enter a valid Zoom link.'
+      },
+      showErrors: function(errorMap, errorList) {
+        this.defaultShowErrors()
+        if ($('#meeting_name-error:visible').length) {
+          $('#meeting_link-error').hide()
+        } else {
+          $('#meeting_link-error').show()
+        }
+      },
+      submitHandler: function(form) {
+        console.log('validating')
+        form.submit()
+      }
+    })
   })
 
 
@@ -448,6 +478,10 @@
     for (var i = 0; i < meetingArray.length; i++){
       $('#edit'+meetingArray[i].id).data(meetingArray[i])
     }
+  }
+
+  function testfunc() {
+    console.log($('#meeting_link').val())
   }
 </script>
 {% endblock script %}

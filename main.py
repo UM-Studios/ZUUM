@@ -94,7 +94,7 @@ def edit_task(id):
                     changes['triggers'] = [Trigger(day_of_week=weeknums[day[0]], hour=int(hour), minute=int(minute))]
         task.configure(scheduler, **changes)
         flash("Meeting Updated", "success")
-        #tree_print(changes, 0)
+        tree_print(data, 0)
         """
         if request.form['action'] == "+":
             changes['triggers'] = task.triggers
