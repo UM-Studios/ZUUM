@@ -2,6 +2,24 @@
 
 {% block stylesheet %}
 <style>
+.meetinglist tr{
+  height: 73px;
+}
+.run-move{
+  width: 70px;
+}
+#runtask-wrapper{
+  padding: 5px 0;
+}
+.triggers {
+  width: 350px;
+}
+.edit-delete {
+  width: 100px;
+}
+.reorder {
+  display: none;
+}
 .daybutton {
   font-weight: 400;
   width: 2.5rem;
@@ -14,7 +32,6 @@
 }
 .daybutton:not(:disabled) {
   background-color: rgb(180, 180, 180);
-  
 }
 .daybutton:disabled {
   background-color: rgb(221, 221, 221);
@@ -24,6 +41,9 @@
 .trigger.next {
   font-weight: 1000;
 }
+.not-reorder {
+  vertical-align: bottom;
+}
 .arr {
   border: solid black;
   border-width: 0 3px 3px 0;
@@ -31,6 +51,9 @@
   padding: 3px;
   width: 15px;
   height: 15px;
+}
+.arr:not(.arr-disabled):hover {
+  cursor: pointer;
 }
 .arr-up {
   transform: rotate(-135deg);
@@ -57,18 +80,19 @@
 .actuallynofade {
   transition: none;
 }
-input[id^=chk]:disabled+label{
+input[id^=chk]:disabled + .label{
   cursor: default;
-  background-color: #9e9e9e;
+  background-color: #b5b5b5;
 }
 input[id^=chk]:disabled + .label .ball{
-  transform: translateX(7.5px);
+  transform: translateX(15px);
+  opacity: 80%;
 }
 </style>
 {% endblock stylesheet %}
 
 {% block content %}
-  <table class="table table-striped table-bordered">
+  {# <table class="table table-striped table-bordered">
     <thead>
       <tr>
         <th scope="col">Status</th>
@@ -112,31 +136,51 @@ input[id^=chk]:disabled + .label .ball{
             </tr>
         {% endfor %}
     </tbody>
-  </table>
+  </table> #}
   <table class="table table-striped meetinglist">
     <thead>
       <tr>
-        <th scope="col">Meetings</th>
+        <th scope="col" colspan="6">
+          <div class="d-flex">
+            <div class="mr-auto p-2 bd-highlight"><h3>Meetings</h3></div>
+            <div class="p-2 bd-highlight">
+              <button id="newtask" class="btn not-reorder" data-toggle="modal" data-target="#edit_task_modal">
+                <!--Plus Icon-->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" width="20px" height="20px"><path d="M0 0h24v24H0z" fill="none"/><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+              </button>
+            </div>
+            <div class="p-2 bd-highlight">
+              <button class="btn" id="reorder-tg">
+                <!--Pencil Icon-->
+                <div class="not-reorder">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" width="20px" height="20px"><path d="M0 0h24v24H0z" fill="none"/><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                </div>
+                <div class="reorder">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="20px" height="20px"><path d="M0 0h24v24H0z" fill="none"/><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
+                </div>
+              </button>
+            </div>
+          </div>
+        </th>
       </tr>
     </thead>
     <tbody>
       {% for meeting in meetings.values() %}
-        <tr>
-          <td>
-            <i class="arr arr-up arr-disabled" id="up{{loop.index}}" data-index={{loop.index}}></i>
-            <br>
-            <i class="arr arr-down arr-disabled" id="down{{loop.index}}" data-index={{loop.index}}></i>
-            </td>
-          <td class="centered">
-            <!--<a class="btn btn-primary btn-sm option-button" href="{{ url_for('run_task', id=meeting.id) }}">Run Now</a>-->
-            <a href="{{ url_for('run_task', id=meeting.id) }}">
-              <svg height="40" width="40">
-                <polygon points="4,4 4,36 36,20" style="fill:green;stroke-width:3"/>
-              </svg>
-            </a>
+        <tr id="meeting-{{ meeting.id }}">
+          <td class="run-move">
+            <div class="reorder">
+              <i class="arr arr-up arr-disabled" id="up-{{meeting.id}}" data-index={{loop.index}}></i>
+              <br>
+              <i class="arr arr-down arr-disabled" id="down-{{meeting.id}}" data-index={{loop.index}}></i>
+            </div>
+            <div id="runtask-wrapper" class="not-reorder">
+              <a href="{{ url_for('run_task', id=meeting.id) }}">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 18" fill="#007bff" width="30px" height="30px"><path d="M3.1,0v18l14.1-9L3.1,0z"/></svg>
+              </a>
+            </div>
           </td>
-          <td>{{ meeting.name }}</td>
-          <td class="text">
+          <td class="text overflow-hidden"><span>{{ meeting.name }}</span></td>
+          <td class="triggers">
             {% for i in range(7) %}
               <button type="button" class="btn daybutton{{' next' if meeting.triggers_by_day()[(i-1)%7][1] }}" data-toggle="popover" title="{{meeting.triggers_by_day()[(i-1)%7][0]}}" {{"disabled" if not meeting.triggers_by_day()[(i-1)%7][2]}}>
                 {{meeting.triggers_by_day()[(i-1)%7][0][0]}}
@@ -147,22 +191,27 @@ input[id^=chk]:disabled + .label .ball{
                 {% endfor %}
               </div>
             {% endfor %}
-          <td class="centered">
-            <button class="btn btn-primary btn-sm option-button" id="edit{{ meeting.id }}" data-toggle="modal" data-target="#edit_task_modal">Edit</button>
-          </td>
-          <td>
+          <td class="toggle">
             <div>
-              <input type="checkbox" class="checkbox" name="enabled" id="chk{{loop.index}}" onclick="change_state('{{ meeting.id }}')"{{' disabled' if not meeting.triggers}}{{' checked' if meeting.enabled}}>
+              <input type="checkbox" class="checkbox" name="enabled" id="chk{{loop.index}}" onclick="change_state('{{ meeting.id }}')"{{' checked' if not meeting.enabled}}{{' disabled' if not meeting.triggers}}>
               <label class="label" for="chk{{loop.index}}" id="lb-chk{{loop.index}}">
                   <div class="ball"></div>
               </label>
+            </div>
+          </td>
+          <td class="edit-delete">
+            <div class="not-reorder">
+              <button class="btn btn-primary btn-sm option-button" id="edit{{ meeting.id }}" data-toggle="modal" data-target="#edit_task_modal">Edit</button>
+            </div>
+            <div class="reorder">
+              <button class="btn btn-danger btn-sm option-button" id="delete-{{ meeting.id }}" data-url="{{ url_for('delete_task', id=meeting.id) }}">Delete</button>
             </div>
           </td>
         </tr>
       {% endfor %}
     </tbody>
   </table>
-
+{# <button class ="btn btn-secondary" id="test" onclick="testfunc()">test</button> #}
 {% endblock content %}
 
 {% block modal %}
@@ -188,7 +237,7 @@ input[id^=chk]:disabled + .label .ball{
               <div class="input-group-prepend">
                 <span class="input-group-text" style="width: 4rem">Link</span>
               </div>
-              <input type="text" class="form-control" id="meeting_link" name="meeting_link">
+              <input type="text" class="form-control" id="meeting_link" name="meeting_link" onClick="this.select()">
             </div>
           </div>
           <div class="form-group">
@@ -231,10 +280,9 @@ input[id^=chk]:disabled + .label .ball{
             </div>
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
             <button class="btn btn-primary" id="submit-form" type="submit">Save Changes</button>
-            <!--<button class ="btn btn-secondary" id="test" onclick="testfunc()">test</button>-->  
             <!--<input type="submit" class="btn btn-primary" name="submit" id="submit-form" value="Save Changes">-->
           </div>
-          <input type="hidden" name="data" id="data">
+          {# <input type="hidden" name="data" id="data"> #}
         </form>
       </div>
     </div>
@@ -260,22 +308,22 @@ input[id^=chk]:disabled + .label .ball{
         return $(this).next('#popover_content_wrapper').html()
       }
     })
-    {% for meeting in meetings.values() %}
-      $('#up{{loop.index}}').click(function(){
-        if (!($(this).hasClass('arr-disabled'))) {
-          let index = $(this).attr('data-index')
-          shift_task('{{meeting.id}}', index, -1)
-          refresh()
-        }
-      })
-      $('#down{{loop.index}}').click(function(){
-        if (!($(this).hasClass('arr-disabled'))) {
-          let index = $(this).attr('data-index')
-          shift_task('{{meeting.id}}', index, 1)
-          refresh()
-        }
-      })
-    {% endfor %}
+    $('[id^=up]').click(function(){
+      if (!($(this).hasClass('arr-disabled'))) {
+        let index = $(this).attr('data-index')
+        id = $(this).attr('id').split('-')[1]
+        shift_task(id, index, -1)
+        refresh()
+      }
+    })
+    $('[id^=down]').click(function(){
+      if (!($(this).hasClass('arr-disabled'))) {
+        let index = $(this).attr('data-index')
+        id = $(this).attr('id').split('-')[1]
+        shift_task(id, index, 1)
+        refresh()
+      }
+    })
     $('arr-disabled').off('click')
     refresh()
     
@@ -363,7 +411,7 @@ input[id^=chk]:disabled + .label .ball{
             newtrigger.focus()
             return
           }
-          data['triggers'][day[0]][2].push([null, null, newtrigger])
+          data['triggers'][day[0]][2].push([null, null, newtrigger.val()])
           data['triggers'][day[0]][2].sort(function (a, b) {
             return new Date('1970/01/01 ' + a[2]) - new Date('1970/01/01 ' + b[2]);
           });
@@ -381,7 +429,20 @@ input[id^=chk]:disabled + .label .ball{
           return
         })
       }
+      $('[id^=list-Sunday]').addClass('active show')
       updatepills()
+    })
+    $('#reorder-tg').on('click', function() {
+      $(this).toggleClass('active')
+      $(this).toggleClass('btn-success')
+      if ($(this).hasClass('active')) {
+        $('.reorder').show()
+        $('.not-reorder').hide()
+      } else {
+        $('.reorder').hide()
+        $('.not-reorder').show()
+        location.reload(true)
+      }
     })
     $('#edit_task_modal').on('hidden.bs.modal', function() {
       var modal = $(this)
@@ -416,9 +477,20 @@ input[id^=chk]:disabled + .label .ball{
         }
       },
       submitHandler: function(form) {
-        console.log('validating')
         form.submit()
       }
+    })
+    $('[id^=delete]').on('click', function() {
+      id = $(this).attr('id').split("-")[1]
+      $.post($(this).data('url'))
+      $('#meeting-'+id).remove()
+      meetings = $('[id^=meeting-]')
+      console.log(meetings)
+      for (var i = 0; i <= meetings.length; i++) {
+        meetings.eq(i).find('.arr').attr('data-index', i+1)
+        console.log(meetings.eq(i), meetings.eq(i).find('.arr').attr('data-index'))
+      }
+      refresh()
     })
   })
 
@@ -466,10 +538,11 @@ input[id^=chk]:disabled + .label .ball{
   }
 
   function refresh() {
+    length = $('[id^=meeting-]').length
     _top = $('[id^="up"][data-index=1]')
     nottop = $('[id^="up"]:not([data-index=1])')
-    bottom = $('[id^="down"][data-index={{meetings|length}}]')
-    notbottom = $('[id^="down"]:not([data-index={{meetings|length}}])')
+    bottom = $('[id^="down"][data-index='+length+']')
+    notbottom = $('[id^="down"]:not([data-index='+length+'])')
     _top.addClass('arr-disabled')
     bottom.addClass('arr-disabled')
     nottop.removeClass('arr-disabled')
@@ -477,6 +550,16 @@ input[id^=chk]:disabled + .label .ball{
   }
 
   function set_edit_data() {
+    emptytriggers = [
+      ['Monday', false, []], 
+      ['Tuesday', false, []], 
+      ['Wednesday', false, []], 
+      ['Thursday', false, []], 
+      ['Friday', false, []], 
+      ['Saturday', false, []], 
+      ['Sunday', false, []], 
+    ]
+    $('#newtask').data({url: '{{ url_for("new_meeting") }}', id: "NEW", name: "", link: "", triggers: emptytriggers})
     var meetingArray = new Array()
     var meeting = {}
     {% for meeting in meetings.values() %}
@@ -489,7 +572,7 @@ input[id^=chk]:disabled + .label .ball{
   }
 
   function testfunc() {
-    console.log($('#meeting_link').val())
+
   }
 </script>
 {% endblock script %}

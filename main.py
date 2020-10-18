@@ -65,44 +65,45 @@ def meetings():
 @app.route("/new_meeting", methods=["GET", "POST"])
 def new_meeting():
     if request.method == "POST":
+        data = json.loads(request.form['data'])
         name = request.form['meeting_name']
         link = request.form['meeting_link']
-        newtask = Task.task_from_browser(name, False, link)
+        triggers = []
+        for day in data['triggers']:
+            for trigger in day[2]:
+                hour, minute = trigger[2].split(":")
+                triggers.append(Trigger(day_of_week=weeknums[day[0]], hour=int(hour), minute=int(minute)))
+        newtask = Task.task_from_browser(name, True, link, triggers)
         newtask.configure(scheduler)
-        id = newtask.id
-        return redirect(url_for('edit_task', id=id))
-    return render_template('NewMeeting.html')
+    return redirect(url_for('meetings'))
 
 @app.route("/<string:id>/edit_task", methods=["GET", "POST"])
 def edit_task(id):
-    print('hello')
     task = Task.get_task_list(scheduler)[id]
     changes = dict.fromkeys(('name', 'link', 'triggers', 'enabled'))
     if not task:
         flash("That task doesn't exist", "info")
     elif request.method == "POST":
+        #tree_print(request.form['data'], 0)
         data = json.loads(request.form['data'])
         #print(data)
         changes['name'] = request.form['meeting_name']
         changes['link'] = request.form['meeting_link']
+        changes['triggers'] = []
         for day in data['triggers']:
             for trigger in day[2]:
                 hour, minute = trigger[2].split(":")
-                try:
-                    changes['triggers'].append(Trigger(day_of_week=weeknums[day[0]], hour=int(hour), minute=int(minute)))
-                except AttributeError:
-                    changes['triggers'] = [Trigger(day_of_week=weeknums[day[0]], hour=int(hour), minute=int(minute))]
+                changes['triggers'].append(Trigger(day_of_week=weeknums[day[0]], hour=int(hour), minute=int(minute)))
         task.configure(scheduler, **changes)
-        flash("Meeting Updated", "success")
-        # tree_print(data, 0)
+        #flash("Meeting Updated", "success")
+        #tree_print(changes, 0)
     return redirect(url_for('meetings'))
 
 @app.route("/<string:id>/run_task", methods=["GET","POST"])
 def run_task(id):
     task = Task.get_task_list(scheduler)[id]
     #scheduler.run_job(task.id, 'default')
-    #print(task.get_task_list(scheduler).print_tasks())
-    print(url_for('edit_task', id=task.id))
+    #task.get_task_list(scheduler).print_tasks()
     flash("Running Task", "info")
     return redirect(url_for('meetings'))
 
@@ -110,7 +111,7 @@ def run_task(id):
 def delete_task(id):
     task = Task.get_task_list(scheduler)[id]
     task.delete(scheduler)
-    flash(f"Deleted {task.name}", "success")
+    # flash(f"Deleted {task.name}", "success")
     return redirect(url_for('meetings'))
 
 @app.route("/<string:id>/enable_task", methods=["GET","POST"])
@@ -143,12 +144,7 @@ def shift_task(id, direction):
     tasklist = Task.get_task_list(scheduler)
     tasklist.shift_task(id, int(direction))
     return redirect(url_for('meetings'))
-"""
-@app.route("/<string:id>/shift_down", methods=["GET","POST"])
-def shift_down(id):
-    tasklist = Task.get_task_list(scheduler)
-    tasklist.shift_task(id, 1)
-    return redirect(url_for('meetings'))
-"""
+
 if __name__ == "__main__":
+    #ui.run()
     app.run(debug=True)
