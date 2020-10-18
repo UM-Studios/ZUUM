@@ -88,6 +88,88 @@ input[id^=chk]:disabled + .label .ball{
   transform: translateX(15px);
   opacity: 80%;
 }
+.modal-confirm {
+	color: #636363;
+	width: 400px;
+}
+.modal-confirm .modal-content {
+	padding: 20px;
+	border-radius: 5px;
+	border: none;
+	text-align: center;
+	font-size: 14px;
+}
+.modal-confirm .modal-header {
+	border-bottom: none;
+	position: relative;
+}
+.modal-confirm h4 {
+	text-align: center;
+	font-size: 26px;
+	margin: 30px 0 -10px;
+}
+.modal-confirm .close {
+	position: absolute;
+	top: -5px;
+	right: -2px;
+}
+.modal-confirm .modal-body {
+	color: #999;
+}
+.modal-confirm .modal-footer {
+	border: none;
+	text-align: center;
+	border-radius: 5px;
+	font-size: 13px;
+	padding: 10px 15px 25px;
+}
+.modal-confirm .modal-footer a {
+	color: #999;
+}
+.modal-confirm .icon-box {
+	width: 80px;
+	height: 80px;
+	margin: 0 auto;
+	border-radius: 50%;
+	z-index: 9;
+	text-align: center;
+	border: 3px solid #f15e5e;
+}
+.modal-confirm .icon-box i {
+	color: #f15e5e;
+	font-size: 46px;
+	display: inline-block;
+	margin-top: 13px;
+}
+.modal-confirm .btn, .modal-confirm .btn:active {
+	color: #fff;
+	border-radius: 4px;
+	background: #60c7c1;
+	text-decoration: none;
+	transition: all 0.4s;
+	line-height: normal;
+	min-width: 120px;
+	border: none;
+	min-height: 40px;
+	border-radius: 3px;
+	margin: 0 5px;
+}
+.modal-confirm .btn-secondary {
+	background: #c1c1c1;
+}
+.modal-confirm .btn-secondary:hover, .modal-confirm .btn-secondary:focus {
+	background: #a8a8a8;
+}
+.modal-confirm .btn-danger {
+	background: #f15e5e;
+}
+.modal-confirm .btn-danger:hover, .modal-confirm .btn-danger:focus {
+	background: #ee3535;
+}
+.trigger-btn {
+	display: inline-block;
+	margin: 100px auto;
+}
 </style>
 {% endblock stylesheet %}
 
@@ -204,7 +286,7 @@ input[id^=chk]:disabled + .label .ball{
               <button class="btn btn-primary btn-sm option-button" id="edit{{ meeting.id }}" data-toggle="modal" data-target="#edit_task_modal">Edit</button>
             </div>
             <div class="reorder">
-              <button class="btn btn-danger btn-sm option-button" id="delete-{{ meeting.id }}" data-url="{{ url_for('delete_task', id=meeting.id) }}">Delete</button>
+              <button class="btn btn-danger btn-sm option-button" id="delete-{{ meeting.id }}" data-toggle="modal" data-target="#delete_task_modal" data-url="{{ url_for('delete_task', id=meeting.id) }}" data-name="{{meeting.name}}">Delete</button>
             </div>
           </td>
         </tr>
@@ -282,11 +364,32 @@ input[id^=chk]:disabled + .label .ball{
             <button class="btn btn-primary" id="submit-form" type="submit">Save Changes</button>
             <!--<input type="submit" class="btn btn-primary" name="submit" id="submit-form" value="Save Changes">-->
           </div>
-          {# <input type="hidden" name="data" id="data"> #}
+          <input type="hidden" name="data" id="data">
         </form>
       </div>
     </div>
   </div>
+</div>
+
+<div id="delete_task_modal" class="modal fade">
+	<div class="modal-dialog modal-confirm">
+		<div class="modal-content">
+			<div class="modal-header flex-column">
+				<div class="icon-box">
+					<i class="material-icons">&#xE5CD;</i>
+				</div>
+        <h4 class="modal-title w-100">Delete Meeting</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span>&times;</span>
+        </button>
+      </div>
+			<div class="modal-body"><div id="delete-body"></div></div>
+			<div class="modal-footer justify-content-center">
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+				<button type="button" class="btn btn-danger" id="delete-button" data-dismiss="modal">Delete</button>
+			</div>
+		</div>
+	</div>
 </div>
 {% endblock modal %}
 
@@ -296,10 +399,10 @@ input[id^=chk]:disabled + .label .ball{
   $.validator.addMethod('link', function(value) {
     return /{{ linkre | safe }}/.test(value)
   }, 'Invalid Zoom Link')
-  
+
 
   $(function(){
-    
+
     $('.daybutton:not(.disabled)').popover({
       html : true,
       trigger: 'focus',
@@ -326,11 +429,11 @@ input[id^=chk]:disabled + .label .ball{
     })
     $('arr-disabled').off('click')
     refresh()
-    
+
     set_edit_data()
 
     /*show modal*/
-    $('#edit_task_modal').on('show.bs.modal', function (event) {       
+    $('#edit_task_modal').on('show.bs.modal', function (event) {
       button = $(event.relatedTarget)
       modal = $(this)
       data = new Object()
@@ -370,7 +473,7 @@ input[id^=chk]:disabled + .label .ball{
           return (parseInt($(this).text()) > 0)
         }).css('display', 'inline-block')
       }
-      
+
       function refreshlist(day) {
         modal.find('#pill-'+day[1]).text(data['triggers'][day[0]][2].length)
         updatepills()
@@ -480,19 +583,39 @@ input[id^=chk]:disabled + .label .ball{
         form.submit()
       }
     })
-    $('[id^=delete]').on('click', function() {
-      id = $(this).attr('id').split("-")[1]
-      $.post($(this).data('url'))
-      $('#meeting-'+id).remove()
-      meetings = $('[id^=meeting-]')
-      console.log(meetings)
-      for (var i = 0; i <= meetings.length; i++) {
-        meetings.eq(i).find('.arr').attr('data-index', i+1)
-        console.log(meetings.eq(i), meetings.eq(i).find('.arr').attr('data-index'))
-      }
-      refresh()
+    // $('[id^=delete]').on('click', function() {
+    //   id = $(this).attr('id').split("-")[1]
+    //   $.post($(this).data('url'))
+    //   $('#meeting-'+id).remove()
+    //   meetings = $('[id^=meeting-]')
+    //   console.log(meetings)
+    //   for (var i = 0; i <= meetings.length; i++) {
+    //     meetings.eq(i).find('.arr').attr('data-index', i+1)
+    //     console.log(meetings.eq(i), meetings.eq(i).find('.arr').attr('data-index'))
+    //   }
+    //   refresh()
+    // })
+    $('#delete_task_modal').on('show.bs.modal', function (event) {
+      button = $(event.relatedTarget)
+      modal = $(this)
+
+      modal.find('#delete-body').html(`Are you sure you want to delete ${button.data('name')}?`)
+      modal.find('#delete-button').on('click', function(){
+        id = button.attr('id').split("-")[1]
+        console.log(button)
+        $.post(button.data('url'))
+        $('#meeting-'+id).remove()
+        meetings = $('[id^=meeting-]')
+        console.log(meetings)
+        for (var i = 0; i <= meetings.length; i++) {
+          meetings.eq(i).find('.arr').attr('data-index', i+1)
+          console.log(meetings.eq(i), meetings.eq(i).find('.arr').attr('data-index'))
+        }
+        refresh()
+      })
     })
   })
+
 
 
   function htmlDecode(input){
@@ -507,7 +630,7 @@ input[id^=chk]:disabled + .label .ball{
     console.log(`/${id}/${link}`)
     return false
   }
-  
+
   function change_state(id) {
     post_to('change_state', id)
   }
@@ -551,13 +674,13 @@ input[id^=chk]:disabled + .label .ball{
 
   function set_edit_data() {
     emptytriggers = [
-      ['Monday', false, []], 
-      ['Tuesday', false, []], 
-      ['Wednesday', false, []], 
-      ['Thursday', false, []], 
-      ['Friday', false, []], 
-      ['Saturday', false, []], 
-      ['Sunday', false, []], 
+      ['Monday', false, []],
+      ['Tuesday', false, []],
+      ['Wednesday', false, []],
+      ['Thursday', false, []],
+      ['Friday', false, []],
+      ['Saturday', false, []],
+      ['Sunday', false, []],
     ]
     $('#newtask').data({url: '{{ url_for("new_meeting") }}', id: "NEW", name: "", link: "", triggers: emptytriggers})
     var meetingArray = new Array()
