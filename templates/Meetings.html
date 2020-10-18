@@ -450,7 +450,18 @@ input[id^=chk]:disabled + .label .ball{
     })
     $('#edit_task_form').submit( function(event) {
       data = $(this).find('#data').data()
+      console.log(data['triggers'])
+      for (day of data['triggers']) {
+        day[2].forEach( function(trigger, i) {
+          console.log(i, trigger[2])
+          console.log($('#list-'+day[0]+' #trigger-wrapper-'+i+' input').val())
+          trigger[2] = $('#list-'+day[0]+' #trigger-wrapper-'+i+' input').val()
+          console.log(trigger)
+        })
+      }
       $(this).find('#data').attr('value', JSON.stringify(data))
+      return false
+      event.preventDefault();
     })
     $('#edit_task_form').validate({
       rules: {
