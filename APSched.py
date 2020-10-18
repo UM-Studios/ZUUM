@@ -36,16 +36,22 @@ def joinMeeting(args):
 
 def tree_print(obj, layer):
     if isinstance(obj, list):
-        print()
-        for v in obj:
-            print('\t'*layer, end = '')
-            tree_print(v, layer+1)
+        if obj:
+            print()
+            for v in obj:
+                print('\t'*layer, end = '')
+                tree_print(v, layer+1)
+        else:
+            print('[]')
     elif isinstance(obj, dict):
-        print()
-        for k, v in obj.items():
-            print('\t'*layer, end = '')
-            print(f'{k}: ', end = '')
-            tree_print(v, layer+1)
+        if obj:
+            print()
+            for k, v in obj.items():
+                print('\t'*layer, end = '')
+                print(f'{k}: ', end = '')
+                tree_print(v, layer+1)
+        else:
+            print('{}')
     elif isinstance(obj, Task):
         tree_print({'priority': obj.priority, 'enabled': obj.enabled,'args': obj.args}, layer-1)
     elif isinstance(obj, OrTrigger):
@@ -98,7 +104,7 @@ class Task:
     dayabbr = {0: "M", 1: "T", 2: "W", 3: "T", 4: "F", 5: "S", 6: "S"}
     daynames = {0: "Monday", 1: "Tuesday", 2: "Wednesday", 3: "Thursday", 4: "Friday", 5: "Saturday", 6: "Sunday"}
 
-    def __init__(self, name, enabled, args = argsTemplate, triggers = [], id = None, priority = 0):
+    def __init__(self, name, enabled, args = argsTemplate, triggers = [], id = None, priority = -1):
         self.priority = priority
         self.name = name
         self.args = args
@@ -173,6 +179,8 @@ class Task:
         if self.id:
             changes = {change: changes[change] for change in changes if changes[change] is not None}
             if 'triggers' in changes:
+                if changes['triggers'] == []:
+                    self.disable(scheduler)
                 changes['trigger'] = OrTrigger(changes['triggers'])
                 self.triggers = changes['triggers']
                 self.trigger = changes['trigger']
