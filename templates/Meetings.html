@@ -177,7 +177,7 @@ input[id^=chk]:disabled + .label .ball{
   {# <table class="table table-striped table-bordered">
     <thead>
       <tr>
-        <th scope="col">Status</th>
+        <th scope="col">Enabled</th>
         <th scope="col">Name</th>
         <th scope="col">Link</th>
         <th scope="col">Run Times</th>
@@ -200,6 +200,7 @@ input[id^=chk]:disabled + .label .ball{
                 <td class="text">
                   <span id="link">{{ meeting.browser_link() }}</span>
                   <a class="copy-link" href="#" onclick="copylink('{{meeting.browser_link()}}')">Copy Link</a>
+
                 </td>
                 <td>
                   {% for trigger in meeting.triggers %}

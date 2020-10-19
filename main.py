@@ -145,6 +145,14 @@ def shift_task(id, direction):
     tasklist.shift_task(id, int(direction))
     return redirect(url_for('meetings'))
 
+@app.route("/<string:id>/change_status", methods=["POST"])
+def change_status(id):
+    task = get_task_by_id(id)
+    task.enabled = not task.enabled
+    task.commit_changes()
+    flash(f"Enabled {task.get_task_name()}", "success")
+    return redirect(url_for('meetings'))
+
 if __name__ == "__main__":
     #ui.run()
     app.run(debug=True)
