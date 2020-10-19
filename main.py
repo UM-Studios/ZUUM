@@ -22,7 +22,7 @@ app = Flask(__name__)
 
 app.secret_key = '8af32bf6ff121fecbce4cbb67f5cb43b'
 
-#ui = FlaskUI(app)
+ui = FlaskUI(app=app, browser_path=os.path.abspath("chromium/chrome.exe"))
 
 try:
     conn = rpyc.connect('localhost', 12345, config={"allow_all_attrs": True, "allow_pickle": True})
@@ -37,8 +37,6 @@ except ConnectionRefusedError:
         exit('could not connect to server')
 
 scheduler = conn.root
-
-current_triggers = []
 
 
 @app.route("/")
@@ -102,7 +100,7 @@ def edit_task(id):
 @app.route("/<string:id>/run_task", methods=["GET","POST"])
 def run_task(id):
     task = Task.get_task_list(scheduler)[id]
-    #scheduler.run_job(task.id, 'default')
+    scheduler.run_job(task.id, 'default')
     #task.get_task_list(scheduler).print_tasks()
     flash("Running Task", "info")
     return redirect(url_for('meetings'))
