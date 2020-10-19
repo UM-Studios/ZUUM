@@ -40,21 +40,21 @@ scheduler = conn.root
 
 
 @app.route("/")
-@app.route("/calendar")
-def calendar():
-    #days = {"Sunday":[],"Monday":[],"Tuesday":[],"Wednesday":[],"Thursday":[],"Friday":[],"Saturday":[]}
-    days = {i:[] for i in range(7)}
-    for task in Task.get_task_list(scheduler).values():
-        for trigger in task.triggers:
-            days[trigger.day].append([trigger.formatted_time(), task, trigger.time.hour*60+trigger.time.minute+65])
-    data = [["Mon", days[0]],
-            ["Tue", days[1]],
-            ["Wed", days[2]],
-            ["Thu", days[3]],
-            ["Fri", days[4]],
-            ["Sat", days[5]],
-            ["Sun", days[6]]]
-    return render_template('Calendar.html', data=data)
+# @app.route("/calendar")
+# def calendar():
+#     #days = {"Sunday":[],"Monday":[],"Tuesday":[],"Wednesday":[],"Thursday":[],"Friday":[],"Saturday":[]}
+#     days = {i:[] for i in range(7)}
+#     for task in Task.get_task_list(scheduler).values():
+#         for trigger in task.triggers:
+#             days[trigger.day].append([trigger.formatted_time(), task, trigger.time.hour*60+trigger.time.minute+65])
+#     data = [["Mon", days[0]],
+#             ["Tue", days[1]],
+#             ["Wed", days[2]],
+#             ["Thu", days[3]],
+#             ["Fri", days[4]],
+#             ["Sat", days[5]],
+#             ["Sun", days[6]]]
+#     return render_template('Calendar.html', data=data)
 
 @app.route("/meetings")
 def meetings():
