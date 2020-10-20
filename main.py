@@ -15,31 +15,88 @@ from appdata import appdata
 from apscheduler.triggers.combining import OrTrigger
 
 from subprocess import Popen
+# import logging
+
+# logging.basicConfig(level=logging.DEBUG)
 
 #zoompath = r"%APPDATA%\Zoom\bin\Zoom.exe"
+
+# prevent it from breaking when running with no console
+try:
+    sys.stdout.write("\n")
+    sys.stdout.flush()
+except (IOError, AttributeError):
+    class dummyStream:
+        ''' dummyStream behaves like a stream but does nothing. '''
+        def __init__(self): pass
+        def write(self,data): pass
+        def read(self,data): pass
+        def flush(self): pass
+        def close(self): pass
+    # and now redirect all default streams to this dummyStream:
+    sys.stdout = dummyStream()
+    sys.stderr = dummyStream()
+    sys.stdin = dummyStream()
+    sys.__stdout__ = dummyStream()
+    sys.__stderr__ = dummyStream()
+    sys.__stdin__ = dummyStream()
 
 app = Flask(__name__)
 
 app.secret_key = '8af32bf6ff121fecbce4cbb67f5cb43b'
 
-ui = FlaskUI(app=app, browser_path=os.path.abspath("chromium/chrome.exe"))
+
+ui = FlaskUI(app=app)
 
 try:
     conn = rpyc.connect('localhost', 12345, config={"allow_all_attrs": True, "allow_pickle": True})
+    scheduler = conn.root
 except ConnectionRefusedError:
-    print('error')
-    devnull = open(os.devnull, 'wb') # Use this in Python < 3.3
-    # Python >= 3.3 has subprocess.DEVNULL
-    #Popen([sys.executable, 'server.py'], stdout=devnull, stderr=devnull, shell=True)
-    try:
-        conn = rpyc.connect('localhost', 12345, config={"allow_all_attrs": True, "allow_pickle": True})
-    except ConnectionRefusedError:
-        exit('could not connect to server')
-
-scheduler = conn.root
-
+    scheduler = None
+    # print('error')
+    # devnull = open(os.devnull, 'wb') # Use this in Python < 3.3
+    # # Python >= 3.3 has subprocess.DEVNULL
+    # #Popen([sys.executable, 'server.py'], stdout=devnull, stderr=devnull, shell=True)
+    # try:
+    #     conn = rpyc.connect('localhost', 12345, config={"allow_all_attrs": True, "allow_pickle": True})
+    # except ConnectionRefusedError:
+    #     exit('could not connect to server')
 
 @app.route("/")
+def main():
+    if scheduler:
+        return redirect(url_for('meetings'))
+    else:
+        return redirect(url_for('connection_error'))
+
+@app.route("/connection_error")
+def connection_error():
+    return render_template('ConnectionError.html')
+
+@app.route("/start_scheduler", methods=["GET", "POST"])
+def start_scheduler():
+    if 'start' in request.form:
+        global scheduler
+        if sys.platform == "win32":
+            try:
+                Popen(["ZuumScheduler.exe"])
+            except FileNotFoundError:
+                pass
+        else:
+            pass
+        try:
+            conn = rpyc.connect('localhost', 12345, config={"allow_all_attrs": True, "allow_pickle": True})
+            scheduler = conn.root
+        except ConnectionRefusedError:
+            scheduler = None
+        return redirect(url_for('main'))
+    elif 'add' in request.form:
+        if sys.platform == "win32":
+            Popen(["powershell.exe", "./addstartup.ps1"])
+        else:
+            pass
+        flash('Added to startup', 'info')
+    return redirect(url_for('main'))
 # @app.route("/calendar")
 # def calendar():
 #     #days = {"Sunday":[],"Monday":[],"Tuesday":[],"Wednesday":[],"Thursday":[],"Friday":[],"Saturday":[]}
@@ -129,7 +186,7 @@ def disable_task(id):
 @app.route("/<string:id>/change_state", methods=["GET","POST"])
 def change_state(id):
     task = Task.get_task_list(scheduler)[id]
-    print(task.id)
+    # print(task.id)
     if task.enabled:
         task.disable(scheduler)
     else:
@@ -138,19 +195,11 @@ def change_state(id):
 
 @app.route("/<string:id>/shift_task/<string:direction>", methods=["GET","POST"])
 def shift_task(id, direction):
-    print(id, direction)
+    # print(id, direction)
     tasklist = Task.get_task_list(scheduler)
     tasklist.shift_task(id, int(direction))
     return redirect(url_for('meetings'))
 
-@app.route("/<string:id>/change_status", methods=["POST"])
-def change_status(id):
-    task = get_task_by_id(id)
-    task.enabled = not task.enabled
-    task.commit_changes()
-    flash(f"Enabled {task.get_task_name()}", "success")
-    return redirect(url_for('meetings'))
-
 if __name__ == "__main__":
-    #ui.run()
-    app.run(debug=True)
+    ui.run()
+    #app.run(debug=True)

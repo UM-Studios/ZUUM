@@ -20,6 +20,26 @@ import os, sys, subprocess
 from datetime import datetime
 from APSched import Task, Trigger
 
+# prevent it from breaking when running with no console
+try:
+    sys.stdout.write("\n")
+    sys.stdout.flush()
+except (IOError, AttributeError):
+    class dummyStream:
+        ''' dummyStream behaves like a stream but does nothing. '''
+        def __init__(self): pass
+        def write(self,data): pass
+        def read(self,data): pass
+        def flush(self): pass
+        def close(self): pass
+    # and now redirect all default streams to this dummyStream:
+    sys.stdout = dummyStream()
+    sys.stderr = dummyStream()
+    sys.stdin = dummyStream()
+    sys.__stdout__ = dummyStream()
+    sys.__stderr__ = dummyStream()
+    sys.__stdin__ = dummyStream()
+
 def serv_joinMeeting(task):
     args=task.args
     print(f'[{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}] Ran {task.name}')
@@ -52,13 +72,13 @@ class SchedulerService(rpyc.Service):
         return scheduler.get_job(job_id)
 
     def exposed_modify_job(self, job_id, jobstore='default', **changes):
-        job = scheduler.get_job(job_id)
+        # job = scheduler.get_job(job_id)
         scheduler.modify_job(job_id, jobstore, **changes)
-        fchanges = changes
-        if 'args' in changes:
-            fchanges['args'] = {arg: changes['args'][0].args[arg] for arg in changes['args'][0].args if changes['args'][0].args[arg] != ''}
-        ffchanges = "\n".join("\t{}: {}".format(k, v) for k, v in fchanges.items())
-        print(f'[{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}] Modified {job.name}:\n{ffchanges}')
+        # fchanges = changes
+        # if 'args' in changes:
+        #     fchanges['args'] = {arg: changes['args'][0].args[arg] for arg in changes['args'][0].args if changes['args'][0].args[arg] != ''}
+        # ffchanges = "\n".join("\t{}: {}".format(k, v) for k, v in fchanges.items())
+        # print(f'[{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}] Modified {job.name}:\n{ffchanges}')
         return scheduler.get_job(job_id)
 
     def exposed_reschedule_job(self, job_id, jobstore='default', trigger=None, **trigger_args):
