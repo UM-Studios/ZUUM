@@ -1,10 +1,9 @@
 ;The comment below contains SFX script commands
 
 Path=ZUUM
-setup=AddException.bat
-Setup=CreateShortcut.bat
-Setup=ZUUM.exe
-SetupCode=0
+Setup=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -sta -WindowStyle Hidden -noprofile -executionpolicy bypass -file addstartup.ps1
+Setup=ZuumScheduler.exe
+Setup=ZuumManager.exe
 Overwrite=1
 Title=Install ZUUM
 Text
