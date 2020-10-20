@@ -252,9 +252,9 @@ input[id^=chk]:disabled + .label .ball{
         <tr id="meeting-{{ meeting.id }}">
           <td class="run-move">
             <div class="reorder">
-              <i class="arr arr-up arr-disabled" id="up-{{meeting.id}}" data-index={{loop.index}}></i>
+              <i class="arr arr-up arr-disabled" id="up-{{meeting.id}}" data-index={{loop.index0}}></i>
               <br>
-              <i class="arr arr-down arr-disabled" id="down-{{meeting.id}}" data-index={{loop.index}}></i>
+              <i class="arr arr-down arr-disabled" id="down-{{meeting.id}}" data-index={{loop.index0}}></i>
             </div>
             <div id="runtask-wrapper" class="not-reorder">
               <a href="{{ url_for('run_task', id=meeting.id) }}">
@@ -270,7 +270,7 @@ input[id^=chk]:disabled + .label .ball{
               </button>
               <div id="popover_content_wrapper" style="display: none">
                 {% for j in meeting.triggers_by_day()[(i-1)%7][2] %}
-                  <div class="trigger{{' next' if j[0]}}">{{j[1]}}</div>
+                  <div class="trigger{{' next' if j[0]}}" id="trigger-{{meeting.id}}-{{meeting.triggers_by_day()[(i-1)%7][0]}}-{{loop.index0}}">{{j[1]}}</div>
                 {% endfor %}
               </div>
             {% endfor %}
@@ -616,7 +616,7 @@ input[id^=chk]:disabled + .label .ball{
         meetings = $('[id^=meeting-]')
         console.log(meetings)
         for (var i = 0; i < meetings.length; i++) {
-          meetings.eq(i).find('.arr').attr('data-index', i+1)
+          meetings.eq(i).find('.arr').attr('data-index', i)
           console.log(meetings.eq(i), meetings.eq(i).find('.arr').attr('data-index'))
         }
         refresh()
@@ -639,6 +639,13 @@ input[id^=chk]:disabled + .label .ball{
         $('[id^=button-'+id+'-'+day[1]+']').addClass('next')
       } else {
         $('[id^=button-'+id+'-'+day[1]+']').removeClass('next')
+      }
+      for (var i = 0; i < data.triggers[day[0]][2].length; i++) {
+        if (data.triggers[day[0]][2][i][0] && data.enabled) {
+          $('[id^=trigger-'+id+'-'+day[1]+'-'+i+']').addClass('next')
+        } else {
+          $('[id^=trigger-'+id+'-'+day[1]+'-'+i+']').removeClass('next')
+        }
       }
     }
 {# 
