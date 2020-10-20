@@ -216,8 +216,8 @@ class Task:
     def disable(self, scheduler, jobstore = 'default'):
         self.__dict__.update(Task.task_from_job(scheduler.pause_job(self.id, jobstore)).__dict__)
     def next_fire(self):
-        if not self.enabled:
-            return None
+        # if not self.enabled:
+        #     return None
         return self.trigger.get_next_fire_time(None, datetime.now()) or None
     def formatted_next_run(self):
         next_fire = self.next_fire()
@@ -234,7 +234,7 @@ class Task:
             if trigger.time:
                 d[trigger.day][2].append(add)
         for day in d:
-            day[2] = sorted(day[2], key=lambda d:d[1])
+            day[2] = sorted(day[2], key=lambda d:d[2])
         return d
     @staticmethod
     def get_task_list(scheduler, jobstore = 'default'):
