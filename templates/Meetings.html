@@ -265,7 +265,7 @@ input[id^=chk]:disabled + .label .ball{
           <td class="text overflow-hidden"><span>{{ meeting.name }}</span></td>
           <td class="triggers">
             {% for i in range(7) %}
-              <button type="button" class="btn daybutton{{' next' if meeting.triggers_by_day()[(i-1)%7][1] }}" data-toggle="popover" title="{{meeting.triggers_by_day()[(i-1)%7][0]}}" {{"disabled" if not meeting.triggers_by_day()[(i-1)%7][2]}}>
+              <button type="button" class="btn daybutton{{' next' if meeting.triggers_by_day()[(i-1)%7][1] }}" id="button-{{meeting.id}}-{{meeting.triggers_by_day()[(i-1)%7][0]}}" data-toggle="popover" title="{{meeting.triggers_by_day()[(i-1)%7][0]}}" {{"disabled" if not meeting.triggers_by_day()[(i-1)%7][2]}}>
                 {{meeting.triggers_by_day()[(i-1)%7][0][0]}}
               </button>
               <div id="popover_content_wrapper" style="display: none">
@@ -276,15 +276,15 @@ input[id^=chk]:disabled + .label .ball{
             {% endfor %}
           <td class="toggle">
             <div>
-              <input type="checkbox" class="checkbox" name="enabled" id="chk{{loop.index}}" onclick="change_state('{{ meeting.id }}')"{{' checked' if not meeting.enabled}}{{' disabled' if not meeting.triggers}}>
-              <label class="label" for="chk{{loop.index}}" id="lb-chk{{loop.index}}">
+              <input type="checkbox" class="checkbox" name="enabled" id="chk-{{meeting.id}}" data-id="{{meeting.id}}" onclick="change_state('{{ meeting.id }}')"{{' checked' if not meeting.enabled}}{{' disabled' if not meeting.triggers}}>
+              <label class="label" for="chk-{{meeting.id}}" id="lb-chk-{{meeting.id}}">
                   <div class="ball"></div>
               </label>
             </div>
           </td>
           <td class="edit-delete">
             <div class="not-reorder">
-              <button class="btn btn-primary btn-sm option-button" id="edit{{ meeting.id }}" data-toggle="modal" data-target="#edit_task_modal">Edit</button>
+              <button class="btn btn-primary btn-sm option-button" id="edit-{{ meeting.id }}" data-toggle="modal" data-target="#edit_task_modal">Edit</button>
             </div>
             <div class="reorder">
               <button class="btn btn-danger btn-sm option-button" id="delete-{{ meeting.id }}" data-toggle="modal" data-target="#delete_task_modal" data-url="{{ url_for('delete_task', id=meeting.id) }}" data-name="{{meeting.name}}">Delete</button>
@@ -427,7 +427,7 @@ input[id^=chk]:disabled + .label .ball{
     $('arr-disabled').off('click')
     refresh()
 
-    set_edit_data()
+    init_display()
 
     /*show modal*/
     $('#edit_task_modal').on('show.bs.modal', function (event) {
@@ -615,7 +615,7 @@ input[id^=chk]:disabled + .label .ball{
         $('#meeting-'+id).remove()
         meetings = $('[id^=meeting-]')
         console.log(meetings)
-        for (var i = 0; i <= meetings.length; i++) {
+        for (var i = 0; i < meetings.length; i++) {
           meetings.eq(i).find('.arr').attr('data-index', i+1)
           console.log(meetings.eq(i), meetings.eq(i).find('.arr').attr('data-index'))
         }
@@ -624,7 +624,33 @@ input[id^=chk]:disabled + .label .ball{
     })
   })
 
-
+  function day_button_display(id) {
+    data = $('#meeting-'+id).find('#edit-'+id).data()
+    buttons =  $('[id^=button-'+id+'-]')
+    enabled = data['enabled']
+    console.log(data)
+    for (day of daynames) {
+      if (data.triggers[day[0]][2].length) {
+        $('[id^=button-'+id+'-'+day[1]+']').removeAttr('disabled')
+      } else {
+        $('[id^=button-'+id+'-'+day[1]+']').attr('disabled','')
+      }
+      if (data.triggers[day[0]][1] && data.enabled) {
+        $('[id^=button-'+id+'-'+day[1]+']').addClass('next')
+      } else {
+        $('[id^=button-'+id+'-'+day[1]+']').removeClass('next')
+      }
+    }
+{# 
+    for (var i = 0; i < buttons.length; i++) {
+      console.log(buttons.eq(i))
+      if (enabled) {
+        buttons.eq(i).removeAttr('disabled')
+      } else {
+        buttons.eq(i).attr('disabled','')
+      }
+    } #}
+  }
 
   function htmlDecode(input){
     var e = document.createElement('textarea')
@@ -640,7 +666,11 @@ input[id^=chk]:disabled + .label .ball{
   }
 
   function change_state(id) {
+    enabled = $('#meeting-'+id).find('#edit-'+id).data('enabled')
+    $('#meeting-'+id).find('#edit-'+id).data('enabled', !enabled)
+    console.log(enabled)
     post_to('change_state', id)
+    day_button_display(id)
   }
 
   function copylink(link) {
@@ -680,7 +710,7 @@ input[id^=chk]:disabled + .label .ball{
     notbottom.removeClass('arr-disabled')
   }
 
-  function set_edit_data() {
+  function init_display() {
     emptytriggers = [
       ['Monday', false, []],
       ['Tuesday', false, []],
@@ -694,11 +724,12 @@ input[id^=chk]:disabled + .label .ball{
     var meetingArray = new Array()
     var meeting = {}
     {% for meeting in meetings.values() %}
-      meeting = {url: '{{ url_for("edit_task", id=meeting.id) }}', id: '{{meeting.id}}', name: '{{meeting.name}}', link: htmlDecode('{{meeting.browser_link()}}'), triggers: {{meeting.triggers_by_day() | tojson}}}
+      meeting = {url: '{{ url_for("edit_task", id=meeting.id) }}', id: '{{meeting.id}}', name: '{{meeting.name}}', link: htmlDecode('{{meeting.browser_link()}}'), enabled: {{'true' if meeting.enabled else 'false'}}, triggers: {{meeting.triggers_by_day() | tojson}}}
       meetingArray.push(meeting)
     {% endfor %}
     for (var i = 0; i < meetingArray.length; i++){
-      $('#edit'+meetingArray[i].id).data(meetingArray[i])
+      $('#edit-'+meetingArray[i].id).data(meetingArray[i])
+      day_button_display(meetingArray[i].id)
     }
   }
 
