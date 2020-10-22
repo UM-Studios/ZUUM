@@ -1,10 +1,20 @@
 import sys
 from cx_Freeze import setup, Executable
 
-includefiles = ['addstartup.ps1', 'AddException.bat', 'static/', 'templates/']
+
+
+if sys.platform == 'win32':
+    includefiles = ['addstartup.ps1', 'AddException.bat', 'static/', 'templates/']
+    base = 'Win32GUI'
+    location = 'build\\win\\Zuum\\'
+else:
+    includefiles = ['static/', 'templates/'] # hi colin add extra shell scripts or smth here
+    base = None
+    location = 'build/mac/Zuum'
+
 
 build_exe_options = {
-    #"packages": ["os", "sys"], 
+    "packages": ["os", "sys"], 
     "excludes": ["tkinter", "PyQt4.QtSql",
                 "scipy.lib.lapack.flapack",
                 "PyQt4.QtNetwork",
@@ -12,7 +22,7 @@ build_exe_options = {
                 "numpy.core._dotblas",
                 "PyQt5"],
     "includes": ["sqlalchemy", "html.parser", "sqlalchemy.dialects.sqlite", "sqlalchemy.sql.default_comparator", "APSched", "setuptools", "jinja2.ext"],
-    'build_exe': 'build\\Zuum\\',
+    'build_exe': location,
     'include_files': includefiles
 }
 
@@ -26,12 +36,12 @@ setup(  name = "ZUUM",
                 script="taskrunner.py",
                 targetName="ZuumScheduler",
                 icon="static\\img\\zmlogo.ico",
-                base = "Win32GUI"
+                base = base
             ),
             Executable(
                 script="main.py",
                 targetName="ZuumManager",
                 icon="static\\img\\zmlogo.ico",
-                base = "Win32GUI"
+                base = base
             )
         ])
