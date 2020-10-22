@@ -2,6 +2,7 @@ from APSched import Task, Trigger, TaskList, weeknums, tree_print
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flaskwebgui import FlaskUI
 from datetime import datetime
+from time import sleep
 import hashlib
 import json
 
@@ -83,17 +84,22 @@ def start_scheduler():
             except FileNotFoundError:
                 pass
         else:
+            # hi colin start zuum scheduler
             pass
-        try:
-            conn = rpyc.connect('localhost', 12345, config={"allow_all_attrs": True, "allow_pickle": True})
-            scheduler = conn.root
-        except ConnectionRefusedError:
-            scheduler = None
+        for i in range(3):
+            try:
+                conn = rpyc.connect('localhost', 12345, config={"allow_all_attrs": True, "allow_pickle": True})
+                scheduler = conn.root
+                break
+            except ConnectionRefusedError:
+                scheduler = None
+                sleep(3)
         return redirect(url_for('main'))
     elif 'add' in request.form:
         if sys.platform == "win32":
             Popen(["powershell.exe", "./addstartup.ps1"])
         else:
+            # hi colin add zuum scheduler to startup
             pass
         flash('Added to startup', 'info')
     return redirect(url_for('main'))
