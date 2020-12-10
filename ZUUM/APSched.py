@@ -18,6 +18,7 @@ from pytz import UTC
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.combining import OrTrigger
+from apscheduler.triggers.date import DateTrigger
 from apscheduler.util import undefined
 
 import rpyc
@@ -34,7 +35,7 @@ def joinMeeting(args):
     os.startfile(f'zoommtg://zoom.us/join?{"&".join([arg+"="+args[arg] for arg in args if args[arg]])}')
     #os.startfile(Task.get_protocol_link(args))
 
-def tree_print(obj, layer):
+def tree_print(obj, layer = 0):
     if isinstance(obj, list):
         if obj:
             print()
@@ -81,14 +82,14 @@ class TaskList(OrderedDict):
     def print_tasks(self):
         tree_print({task.name: self.scheduler.get_job(task.id).__getstate__() for task in self.values()}, 0)
 
-class Trigger(CronTrigger):
+class CTrigger(CronTrigger):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.day = int(str(self.fields[4]))
         self.time = time(**{self.fields[i].name: int(str(self.fields[i])) for i in range(5,8)})
     @classmethod
-    def from_cron_trigger(cls, crontrigger):
-        return cls(**{field.name: (None if str(field) == '*' else str(field)) for field in crontrigger.fields})
+    def from_job_trigger(cls, jobtrigger):
+        return cls(**{field.name: (None if str(field) == '*' else str(field)) for field in jobtrigger.fields})
     def formatted_day_time(self):
         return f'{weekdays[self.day]} at {self.time.strftime("%I:%M %p").lstrip("0")}'
     def formatted_time(self):
@@ -97,6 +98,19 @@ class Trigger(CronTrigger):
         return self.time.strftime("%H:%M")
     def formatted_day(self):
         return weekdays[self.day]
+
+class DTrigger(DateTrigger):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+    @classmethod
+    def from_job_trigger(cls, jobtrigger):
+        return cls(run_date=jobtrigger.run_date)
+
+class NeverTrigger(DateTrigger):
+    def __init__(self):
+        super().__init__(run_date=datetime(2038, 12, 31, 23, 59, 59, tzinfo=UTC))
+    # def __str__(self):
+    #     return 'never'
 
 class Task:
     browser_re = r'^((https?:\/\/)?([a-zA-Z0-9-]+\.)?zoom\.us\/[jw]\/)(\d+)\??((&?(pwd=[a-zA-Z0-9]+))?|(&?((tk|token)=[a-zA-Z0-9_.-]+))?|(&?(browser=(chrome|firefox|msie|safari)))?|(&?(zc=[01]))?|(&?(uname=[a-zA-Z0-9]+))?|(&?(stype=(100|0|1|101|99)))?|(&?(uid=[a-zA-Z0-9_.-]+))?|(&?(sid=[a-zA-Z0-9_.-]+))?){0,8}(?:#.*)?$'
@@ -109,13 +123,30 @@ class Task:
         self.name = name
         self.args = args
         self.triggers = triggers
+        # if triggers and triggers[0] is NeverTrigger():
+        #     self.triggers = triggers
+        # else:
+        #     self.triggers = [NeverTrigger()] + triggers
         self.trigger = OrTrigger(self.triggers)
         self.enabled = enabled if self.triggers else False
         self.id = id
+    def type(self):
+        if isinstance(self.trigger.triggers[0], DTrigger):
+            return 'date'
+        elif isinstance(self.trigger.triggers[0], CTrigger):
+            return 'cron'
+        else:
+            return None
     @classmethod
     def task_from_job(cls, job):
         #return cls(job.args[0].name, job.args[0].enabled, id = job.id, args = job.args[0].args, triggers = job.args[0].triggers)#[Trigger.from_cron_trigger(ct) for ct in job.args[0].trigger.triggers])
-        return cls(job.name, bool(job.next_run_time), id = job.id, args = job.args[0].args, priority = job.args[0].priority, triggers = [Trigger.from_cron_trigger(ct) for ct in job.trigger.triggers])
+        triggers = []
+        for trigger in job.trigger.triggers:
+            if isinstance(trigger, CTrigger):
+                triggers.append(CTrigger.from_job_trigger(trigger))
+            elif isinstance(trigger, DTrigger):
+                triggers.append(DTrigger.from_job_trigger(trigger))
+        return cls(job.name, bool(job.next_run_time), id = job.id, args = job.args[0].args, priority = job.args[0].priority, triggers = triggers) #[CTrigger.from_job_trigger(ct) for ct in job.trigger.triggers]
 
     @classmethod
     def task_from_browser(cls, name, enabled, link, triggers = []):
@@ -168,7 +199,6 @@ class Task:
         return True
     def browser_link(self):
         return Task.get_browser_link(self.args)
-        #return f'https://zoom.us/j/{self.args["confno"]}&{"&".join([arg+"="+self.args[arg] for arg in self.args if self.args[arg] and arg != "confno"])}'
     @staticmethod
     def get_protocol_link(args):
         return f'zoommtg://zoom.us/join?{"&".join([arg+"="+args[arg] for arg in args if args[arg]])}'
@@ -218,6 +248,8 @@ class Task:
     def next_fire(self):
         # if not self.enabled:
         #     return None
+        # print([f.get_next_fire_time(None, datetime.now()) for f in self.trigger.triggers])
+        # print(self.trigger.triggers[0].get_next_fire_time(None, datetime.now()))
         return self.trigger.get_next_fire_time(None, datetime.now()) or None
     def formatted_next_run(self):
         next_fire = self.next_fire()
@@ -246,7 +278,7 @@ if __name__ == '__main__':
     if (len(sys.argv)==5):
         print('creating task')
         link = 'zoommtg://zoom.us/start?browser=chrome&confno=123456789&zc=0&stype=100&sid=lBGPGzGdT8-2Yf3kjDY5gg&uid=lBGPGzGdT8-2Yf3kjDY5gg&token=xxxxxx&uname=Betty'
-        days = [Trigger(day_of_week=sys.argv[1], hour=sys.argv[2], minute=sys.argv[3])]
+        days = [CTrigger(day_of_week=sys.argv[1], hour=sys.argv[2], minute=sys.argv[3])]
         task = Task.task_from_protocol(sys.argv[4], True, link, days)
     #for arg in task.args:
         #print(f'{arg}: {task.args[arg]}, {bool(task.args[arg])}')

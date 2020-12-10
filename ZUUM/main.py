@@ -1,4 +1,4 @@
-from APSched import Task, Trigger, TaskList, weeknums, tree_print
+from APSched import Task, CTrigger, TaskList, weeknums, tree_print
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flaskwebgui import FlaskUI
 from datetime import datetime
@@ -133,7 +133,7 @@ def new_meeting():
         for day in data['triggers']:
             for trigger in day[2]:
                 hour, minute = trigger[2].split(":")
-                triggers.append(Trigger(day_of_week=weeknums[day[0]], hour=int(hour), minute=int(minute)))
+                triggers.append(CTrigger(day_of_week=weeknums[day[0]], hour=int(hour), minute=int(minute)))
         newtask = Task.task_from_browser(name, True, link, triggers)
         newtask.configure(scheduler)
     return redirect(url_for('meetings'))
@@ -154,7 +154,7 @@ def edit_task(id):
         for day in data['triggers']:
             for trigger in day[2]:
                 hour, minute = trigger[2].split(":")
-                changes['triggers'].append(Trigger(day_of_week=weeknums[day[0]], hour=int(hour), minute=int(minute)))
+                changes['triggers'].append(CTrigger(day_of_week=weeknums[day[0]], hour=int(hour), minute=int(minute)))
         task.configure(scheduler, **changes)
         #flash("Meeting Updated", "success")
         #tree_print(changes, 0)
