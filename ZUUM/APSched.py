@@ -8,18 +8,18 @@ See the SQLAlchemy documentation on how to construct those.
 from appdata import appdata
 
 import sys
-from datetime import datetime, time, MINYEAR
+from datetime import datetime, time, MINYEAR, timezone
 import os
 import warnings
 import re
 from collections import OrderedDict
-from pytz import UTC
+# from pytz import UTC
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.combining import OrTrigger
 from apscheduler.triggers.date import DateTrigger
-from apscheduler.util import undefined
+from apscheduler.triggers.interval import IntervalTrigger
 
 import rpyc
 from rpyc.utils.server import ThreadedServer
@@ -73,7 +73,7 @@ class TaskList(OrderedDict):
         temp = self[id1].priority
         self[id1].configure(self.scheduler, **{'priority': self[id2].priority})
         self[id2].configure(self.scheduler, **{'priority': temp})
-        new = TaskList(self.scheduler, sorted(self.items(), key=lambda t: (t[1].priority, t[1].next_fire() or datetime.max.replace(tzinfo=UTC), t[1].name)))
+        new = TaskList(self.scheduler, sorted(self.items(), key=lambda t: (t[1].priority, t[1].next_fire() or datetime.max.replace(tzinfo=timezone.utc), t[1].name)))
         self.__dict__.update(new.__dict__)
         return self
     def shift_task(self, id, direction):
@@ -106,9 +106,10 @@ class DTrigger(DateTrigger):
     def from_job_trigger(cls, jobtrigger):
         return cls(run_date=jobtrigger.run_date)
 
-class NeverTrigger(DateTrigger):
+class NeverTrigger(IntervalTrigger):
     def __init__(self):
-        super().__init__(run_date=datetime(2038, 12, 31, 23, 59, 59, tzinfo=UTC))
+        interval = datetime.max - datetime.now()
+        super().__init__(days = interval.days - 2)
     # def __str__(self):
     #     return 'never'
 
@@ -271,7 +272,7 @@ class Task:
     @staticmethod
     def get_task_list(scheduler, jobstore = 'default'):
         list = {job.id: Task.task_from_job(job) for job in scheduler.get_jobs(jobstore = jobstore)}
-        s = TaskList(scheduler, sorted(list.items(), key=lambda t: (t[1].priority, t[1].next_fire() or datetime.max.replace(tzinfo=UTC), t[1].name)))
+        s = TaskList(scheduler, sorted(list.items(), key=lambda t: (t[1].priority, t[1].next_fire() or datetime.max.replace(tzinfo=timezone.utc), t[1].name)))
         return s.clean_index()
 
 if __name__ == '__main__':
