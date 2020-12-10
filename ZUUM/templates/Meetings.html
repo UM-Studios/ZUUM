@@ -707,10 +707,10 @@ input[id^=chk]:disabled + .label .ball{
 
   function refresh() {
     length = $('[id^=meeting-]').length
-    _top = $('[id^="up"][data-index=1]')
-    nottop = $('[id^="up"]:not([data-index=1])')
-    bottom = $('[id^="down"][data-index='+length+']')
-    notbottom = $('[id^="down"]:not([data-index='+length+'])')
+    _top = $('[id^="up"][data-index=0]')
+    nottop = $('[id^="up"]:not([data-index=0])')
+    bottom = $('[id^="down"][data-index='+(length-1)+']')
+    notbottom = $('[id^="down"]:not([data-index='+(length-1)+'])')
     _top.addClass('arr-disabled')
     bottom.addClass('arr-disabled')
     nottop.removeClass('arr-disabled')
