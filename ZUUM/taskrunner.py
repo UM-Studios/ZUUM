@@ -18,7 +18,7 @@ from apscheduler.executors.pool import ThreadPoolExecutor
 from appdata import appdata
 import os, sys, subprocess
 from datetime import datetime
-from APSched import Task, CTrigger, NeverTrigger, tree_print
+from APSched import Task, CTrigger, DTrigger, NeverTrigger, tree_print
 
 # prevent it from breaking when running with no console
 try:
@@ -65,9 +65,9 @@ class SchedulerService(rpyc.Service):
         job = scheduler.get_job(job_id)
         trigger = job.trigger
         job.modify(trigger = OrTrigger([NeverTrigger()]))
-        tree_print(job.trigger.triggers, 1)
+        # tree_print(job.trigger.triggers, 1)
         job.modify(next_run_time = datetime.now())
-        tree_print(job.trigger.triggers, 1)
+        # tree_print(job.trigger.triggers, 1)
         if not trigger.triggers:
             scheduler.pause_job(job_id, jobstore)
         # tree_print(job.trigger, 1)

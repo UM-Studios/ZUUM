@@ -8,18 +8,21 @@ See the SQLAlchemy documentation on how to construct those.
 from appdata import appdata
 
 import sys
-from datetime import datetime, time, MINYEAR, timezone
+from datetime import datetime, time
 import os
 import warnings
 import re
 from collections import OrderedDict
-# from pytz import UTC
+from pytz import UTC
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.combining import OrTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
+from apscheduler.util import utc_timestamp_to_datetime, datetime_to_utc_timestamp
+
+from tzlocal import get_localzone
 
 import rpyc
 from rpyc.utils.server import ThreadedServer
@@ -30,13 +33,21 @@ if not os.path.exists(appdata):
 argsTemplate = dict.fromkeys(('confno', 'pwd', 'zc', 'browser', 'uname', 'stype', 'uid', 'sid', 'tk'), '')
 weekdays = {0: "Monday", 1: "Tuesday", 2: "Wednesday", 3: "Thursday", 4: "Friday", 5: "Saturday", 6: "Sunday"}
 weeknums = {"Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3, "Friday": 4, "Saturday": 5, "Sunday": 6}
+maxdatetime = datetime.fromtimestamp(2147483647) 
 
 def joinMeeting(args):
     os.startfile(f'zoommtg://zoom.us/join?{"&".join([arg+"="+args[arg] for arg in args if args[arg]])}')
     #os.startfile(Task.get_protocol_link(args))
 
-def tree_print(obj, layer = 0):
-    if isinstance(obj, list):
+def tree_print(obj, layer = 0, scheduler=None):
+    if isinstance(obj, TaskList):
+        if obj:
+            for task in obj.values():
+                print(task.name + ':')
+                tree_print(scheduler.get_job(task.id).__getstate__(), layer+1)
+        else:
+            print('[]')
+    elif isinstance(obj, list):
         if obj:
             print()
             for v in obj:
@@ -73,14 +84,14 @@ class TaskList(OrderedDict):
         temp = self[id1].priority
         self[id1].configure(self.scheduler, **{'priority': self[id2].priority})
         self[id2].configure(self.scheduler, **{'priority': temp})
-        new = TaskList(self.scheduler, sorted(self.items(), key=lambda t: (t[1].priority, t[1].next_fire() or datetime.max.replace(tzinfo=timezone.utc), t[1].name)))
+        new = TaskList(self.scheduler, sorted(self.items(), key=lambda t: (t[1].priority, t[1].next_fire() or datetime.max.replace(tzinfo=UTC), t[1].name)))
         self.__dict__.update(new.__dict__)
         return self
     def shift_task(self, id, direction):
         shift = (direction > 0) - (direction < 0) #sign() of direction
         return self.swap(id, self.indices[list(self.keys()).index(id)+shift])
     def print_tasks(self):
-        tree_print({task.name: self.scheduler.get_job(task.id).__getstate__() for task in self.values()}, 0)
+        tree_print(self, layer=0, scheduler=self.scheduler)
 
 class CTrigger(CronTrigger):
     def __init__(self, **kwargs):
@@ -100,18 +111,19 @@ class CTrigger(CronTrigger):
         return weekdays[self.day]
 
 class DTrigger(DateTrigger):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, run_date=None, timezone=None):
+        super().__init__(run_date, timezone)
     @classmethod
     def from_job_trigger(cls, jobtrigger):
-        return cls(run_date=jobtrigger.run_date)
+        return cls(run_date=utc_timestamp_to_datetime(datetime_to_utc_timestamp(jobtrigger.run_date)))
 
 class NeverTrigger(IntervalTrigger):
     def __init__(self):
-        interval = datetime.max - datetime.now()
-        super().__init__(days = interval.days - 2)
-    # def __str__(self):
-    #     return 'never'
+        interval = maxdatetime - datetime.now()
+        super().__init__(days = interval.days - 2, timezone=get_localzone())
+        # print(self.start_date)
+    def __str__(self):
+        return 'never'
 
 class Task:
     browser_re = r'^((https?:\/\/)?([a-zA-Z0-9-]+\.)?zoom\.us\/[jw]\/)(\d+)\??((&?(pwd=[a-zA-Z0-9]+))?|(&?((tk|token)=[a-zA-Z0-9_.-]+))?|(&?(browser=(chrome|firefox|msie|safari)))?|(&?(zc=[01]))?|(&?(uname=[a-zA-Z0-9]+))?|(&?(stype=(100|0|1|101|99)))?|(&?(uid=[a-zA-Z0-9_.-]+))?|(&?(sid=[a-zA-Z0-9_.-]+))?){0,8}(?:#.*)?$'
@@ -123,12 +135,13 @@ class Task:
         self.priority = priority
         self.name = name
         self.args = args
-        self.triggers = triggers
+        self.set_trigger(triggers)
+        # self.triggers = triggers
         # if triggers and triggers[0] is NeverTrigger():
         #     self.triggers = triggers
         # else:
         #     self.triggers = [NeverTrigger()] + triggers
-        self.trigger = OrTrigger(self.triggers)
+        # self.trigger = OrTrigger(self.triggers)
         self.enabled = enabled if self.triggers else False
         self.id = id
     def type(self):
@@ -206,6 +219,9 @@ class Task:
     @staticmethod
     def get_browser_link(args):
         return f'https://zoom.us/j/{args["confno"]}&{"&".join([arg+"="+args[arg] for arg in args if args[arg] and arg != "confno"])}'
+    def set_trigger(self, triggers):
+        self.triggers = triggers
+        self.trigger = OrTrigger([trigger for trigger in triggers if not isinstance(trigger,NeverTrigger)] + [NeverTrigger()])
     def configure(self, scheduler, func=joinMeeting, jobstore = 'default', **changes):
         if self.id:
             changes = {change: changes[change] for change in changes if changes[change] is not None}
@@ -251,7 +267,7 @@ class Task:
         #     return None
         # print([f.get_next_fire_time(None, datetime.now()) for f in self.trigger.triggers])
         # print(self.trigger.triggers[0].get_next_fire_time(None, datetime.now()))
-        return self.trigger.get_next_fire_time(None, datetime.now()) or None
+        return self.trigger.get_next_fire_time(None, datetime.now().replace(tzinfo=get_localzone())) or None
     def formatted_next_run(self):
         next_fire = self.next_fire()
         return next_fire.strftime('%A at %I:%M %p').replace(" 0", " ") if next_fire else "None"
@@ -272,7 +288,7 @@ class Task:
     @staticmethod
     def get_task_list(scheduler, jobstore = 'default'):
         list = {job.id: Task.task_from_job(job) for job in scheduler.get_jobs(jobstore = jobstore)}
-        s = TaskList(scheduler, sorted(list.items(), key=lambda t: (t[1].priority, t[1].next_fire() or datetime.max.replace(tzinfo=timezone.utc), t[1].name)))
+        s = TaskList(scheduler, sorted(list.items(), key=lambda t: (t[1].priority, t[1].next_fire() or datetime.max.replace(tzinfo=UTC), t[1].name)))
         return s.clean_index()
 
 if __name__ == '__main__':
