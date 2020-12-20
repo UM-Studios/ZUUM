@@ -1,10 +1,3 @@
-"""
-This example demonstrates the use of the SQLAlchemy job store.
-On each run, it adds a new alarm that fires after ten seconds.
-You can exit the program, restart it and observe that any previous alarms that have not fired yet
-are still active. You can also give it the database URL as an argument.
-See the SQLAlchemy documentation on how to construct those.
-"""
 from appdata import appdata
 
 import sys
