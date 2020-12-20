@@ -6,7 +6,7 @@
 	<string>com.ZUUM.scheduler</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>/Applications/ZUUM.app/Contents/MacOS/zuumscheduler</string>
+		<string>/Applications/ZUUM.app/Contents/MacOS/ZuumScheduler</string>
 	</array>
 	<key>EnvironmentVariables</key>
 	<dict/>
