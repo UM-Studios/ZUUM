@@ -37,23 +37,26 @@ else:
         'include_files': includefiles
     }
     bdist_mac_options = {
-        
+        "iconfile": path.join('static','img','zmlogo.ico')
     }
 
 setup(  name = "ZUUM",
         version = "0.1",
         description = "Joins meetings on scheduled times",
-        options = {"build_exe": build_exe_options},
+        options = {
+            "build_exe": build_exe_options,
+            "bdist_mac": bdist_mac_options
+        },
         executables = [
             Executable(
-                script="taskrunner.py",
-                targetName="ZuumScheduler",
+                script="main.py",
+                targetName="ZuumManager",
                 icon=path.join('static','img','zmlogo.ico'),
                 base = base
             ),
             Executable(
-                script="main.py",
-                targetName="ZuumManager",
+                script="taskrunner.py",
+                targetName="ZuumScheduler",
                 icon=path.join('static','img','zmlogo.ico'),
                 base = base
             )

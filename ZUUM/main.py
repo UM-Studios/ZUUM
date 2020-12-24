@@ -45,7 +45,14 @@ except (IOError, AttributeError):
 app = Flask(__name__)
 
 app.secret_key = '8af32bf6ff121fecbce4cbb67f5cb43b'
-
+if getattr(sys, "frozen", False):
+    # The application is frozen
+    app.root_path = os.path.dirname(sys.executable)
+    # datadir = os.path.dirname(sys.executable)
+else:
+    # The application is not frozen
+    # Change this bit to match where you store your data files:
+    app.root_path = os.path.dirname(__file__)
 
 ui = FlaskUI(app=app)
 

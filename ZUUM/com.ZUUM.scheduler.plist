@@ -8,17 +8,7 @@
 	<array>
 		<string>/Applications/ZUUM.app/Contents/MacOS/ZuumScheduler</string>
 	</array>
-	<key>EnvironmentVariables</key>
-	<dict/>
-	<key>Umask</key>
-	<integer>63</integer>
-	<key>StandardInPath</key>
-	<string>/dev/null</string>
-	<key>StandardOutPath</key>
-	<string>/dev/null</string>
-	<key>StandardErrorPath</key>
-	<string>/dev/null</string>
 	<key>RunAtLoad</key>
-	<false/>
+	<true/>
 </dict>
 </plist>
