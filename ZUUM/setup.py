@@ -2,10 +2,10 @@ import sys
 from cx_Freeze import setup, Executable
 from os import path
 
-
+bdist_mac_options = {}
 
 if sys.platform == 'win32':
-    includefiles = ['addstartup.ps1', 'AddException.bat', 'static/', 'templates/']
+    includefiles = ['addstartup.ps1', 'static/', 'templates/']
     base = 'Win32GUI'
     location = 'build\\win\\Zuum\\'
     build_exe_options = {
@@ -18,7 +18,8 @@ if sys.platform == 'win32':
                     "PyQt5"],
         "includes": ["sqlalchemy", "html.parser", "sqlalchemy.dialects.sqlite", "sqlalchemy.sql.default_comparator", "APSched", "setuptools", "jinja2.ext"],
         'build_exe': location,
-        'include_files': includefiles
+        'include_files': includefiles,
+        'silent': True,
     }
 else:
     includefiles = ['static/', 'templates/'] # hi colin add extra shell scripts or smth here
@@ -42,7 +43,6 @@ else:
 
 setup(  name = "ZUUM",
         version = "0.1",
-        description = "Joins meetings on scheduled times",
         options = {
             "build_exe": build_exe_options,
             "bdist_mac": bdist_mac_options
