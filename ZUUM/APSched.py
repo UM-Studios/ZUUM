@@ -121,8 +121,6 @@ class NeverTrigger(IntervalTrigger):
 class Task:
     browser_re = r'^((https?:\/\/)?([a-zA-Z0-9-]+\.)?zoom\.us\/[jw]\/)(\d+)\??((&?(pwd=[a-zA-Z0-9]+))?|(&?((tk|token)=[a-zA-Z0-9_.-]+))?|(&?(browser=(chrome|firefox|msie|safari)))?|(&?(zc=[01]))?|(&?(uname=[a-zA-Z0-9]+))?|(&?(stype=(100|0|1|101|99)))?|(&?(uid=[a-zA-Z0-9_.-]+))?|(&?(sid=[a-zA-Z0-9_.-]+))?){0,8}(?:#.*)?$'
     prot_re = r'^zoommtg:\/\/zoom\.us\/(start|join)\??((&?action=[a-zA-Z]+)?|(&?confno=\d+)?|(&?(pwd=[a-zA-Z0-9]+))?|(&?((tk|token)=[a-zA-Z0-9_.-]+))?|(&?(browser=(chrome|firefox|msie|safari)))?|(&?(zc=[01]))?|(&?(uname=[a-zA-Z0-9]+))?|(&?(stype=(100|0|1|101|99)))?|(&?(uid=[a-zA-Z0-9_.-]+))?|(&?(sid=[a-zA-Z0-9_.-]+))?){0,10}$'
-    dayabbr = {0: "M", 1: "T", 2: "W", 3: "T", 4: "F", 5: "S", 6: "S"}
-    daynames = {0: "Monday", 1: "Tuesday", 2: "Wednesday", 3: "Thursday", 4: "Friday", 5: "Saturday", 6: "Sunday"}
 
     def __init__(self, name, enabled, args = argsTemplate, triggers = [], id = None, priority = -1):
         self.priority = priority
@@ -221,9 +219,9 @@ class Task:
             if 'triggers' in changes:
                 if changes['triggers'] == []:
                     self.disable(scheduler)
-                changes['trigger'] = OrTrigger(changes['triggers'])
-                self.triggers = changes['triggers']
-                self.trigger = changes['trigger']
+                self.set_trigger(changes['triggers'])
+                changes['trigger'] = self.trigger
+                changes['next_run_time'] = self.next_fire()
                 changes.pop('triggers')
             if 'enabled' in changes:
                 self.enable(scheduler) if changes['enabled'] else self.disable(scheduler)
@@ -265,9 +263,9 @@ class Task:
         next_fire = self.next_fire()
         return next_fire.strftime('%A at %I:%M %p').replace(" 0", " ") if next_fire else "None"
     def triggers_by_day(self):
-        d = [[Task.daynames[i],False,[]] for i in range(7)]
+        d = [[weekdays[i],False,[]] for i in range(7)]
         for trigger in self.triggers:
-            if self.next_fire() and self.next_fire() == trigger.get_next_fire_time(None, datetime.now()):
+            if self.next_fire() and self.next_fire() == trigger.get_next_fire_time(None, datetime.now().replace(tzinfo=get_localzone())):
                 next = True
                 d[trigger.day][1] = True
             else:
