@@ -15,7 +15,7 @@ from appdata import appdata
 
 from apscheduler.triggers.combining import OrTrigger
 
-from subprocess import Popen
+from subprocess import Popen, call
 # import logging
 
 # logging.basicConfig(level=logging.DEBUG)
@@ -87,11 +87,13 @@ def start_scheduler():
         global scheduler
         if sys.platform == "win32":
             try:
+                call(["powershell.exe", "./addstartup.ps1"])
                 Popen(["ZuumScheduler.exe"])
             except FileNotFoundError:
                 pass
         else:
             # hi colin start zuum scheduler
+            call(['sh', 'addstartup.sh'])
             pass
         for i in range(3):
             try:
@@ -101,15 +103,14 @@ def start_scheduler():
             except ConnectionRefusedError:
                 scheduler = None
                 sleep(3)
-        return redirect(url_for('main'))
-    elif 'add' in request.form:
-        if sys.platform == "win32":
-            Popen(["powershell.exe", "./addstartup.ps1"])
-        else:
-            # hi colin add zuum scheduler to startup
-            Popen(['sh', 'addstartup.sh'])
-            pass
-        flash('Added to startup', 'info')
+    # elif 'add' in request.form:
+    #     if sys.platform == "win32":
+    #         call(["powershell.exe", "./addstartup.ps1"])
+    #     else:
+    #         # hi colin add zuum scheduler to startup
+    #         call(['sh', 'addstartup.sh'])
+    #         pass
+    #     flash('Added to startup', 'info')
     return redirect(url_for('main'))
 # @app.route("/calendar")
 # def calendar():
