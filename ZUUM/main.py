@@ -107,6 +107,7 @@ def start_scheduler():
             Popen(["powershell.exe", "./addstartup.ps1"])
         else:
             # hi colin add zuum scheduler to startup
+            Popen(['sh', 'addstartup.sh'])
             pass
         flash('Added to startup', 'info')
     return redirect(url_for('main'))

@@ -22,7 +22,7 @@ if sys.platform == 'win32':
         'silent': True,
     }
 else:
-    includefiles = ['static/', 'templates/'] # hi colin add extra shell scripts or smth here
+    includefiles = ['static/', 'templates/', 'com.ZUUM.scheduler.plist', 'addstartup.sh'] # hi colin add extra shell scripts or smth here
     base = None
     location = 'build/mac/Zuum'
     build_exe_options = {
