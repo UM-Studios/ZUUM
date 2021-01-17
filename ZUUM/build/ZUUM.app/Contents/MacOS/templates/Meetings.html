@@ -1,0 +1,701 @@
+{% extends "layout.html" %}
+
+{% block stylesheet %}
+<style>
+.meetinglist tr{
+  height: 73px;
+}
+.run-move{
+  width: 70px;
+}
+#runtask-wrapper{
+  padding: 5px 0;
+}
+.triggers {
+  width: 350px;
+}
+.edit-delete {
+  width: 100px;
+}
+.reorder {
+  display: none;
+}
+.daybutton {
+  font-weight: 400;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0rem 0rem;
+}
+.daybutton.next {
+  border-color: #007bff;
+  border-width: 3px;
+}
+.daybutton:not(:disabled) {
+  background-color: rgb(180, 180, 180);
+}
+.daybutton:disabled {
+  background-color: rgb(221, 221, 221);
+  opacity:100%;
+  color: black;
+}
+.trigger.next {
+  font-weight: 1000;
+}
+.not-reorder {
+  vertical-align: bottom;
+}
+.arr {
+  border: solid black;
+  border-width: 0 3px 3px 0;
+  display: inline-block;
+  padding: 3px;
+  width: 15px;
+  height: 15px;
+}
+.arr:not(.arr-disabled):hover {
+  cursor: pointer;
+}
+.arr-up {
+  transform: rotate(-135deg);
+  -webkit-transform: rotate(-135deg);
+}
+.arr-down {
+  transform: rotate(45deg);
+  -webkit-transform: rotate(45deg);
+}
+.arr-disabled {
+  opacity: 20%;
+}
+.list-group-item-light {
+  color: #000000;
+}
+.list-group-item-light.list-group-item-action:hover, .list-group-item-light.list-group-item-action:focus {
+  color: #000000;
+}
+.list-group-item-light.list-group-item-action.active {
+  color: #ffffff;
+  background-color: #9e9e9e;
+  border-color: #9e9e9e;
+}
+.actuallynofade {
+  transition: none;
+}
+input[id^=chk]:disabled + .label{
+  cursor: default;
+  background-color: #b5b5b5;
+}
+input[id^=chk]:disabled + .label .ball{
+  transform: translateX(15px);
+  opacity: 80%;
+}
+.modal-confirm {
+	color: #636363;
+	width: 400px;
+}
+.modal-confirm .modal-content {
+	padding: 20px;
+	border-radius: 5px;
+	border: none;
+	text-align: center;
+	font-size: 14px;
+}
+.modal-confirm .modal-header {
+	border-bottom: none;
+	position: relative;
+}
+.modal-confirm h4 {
+	text-align: center;
+	font-size: 26px;
+	margin: 30px 0 -10px;
+}
+.modal-confirm .close {
+	position: absolute;
+	top: -5px;
+	right: -2px;
+}
+.modal-confirm .modal-body {
+	color: #999;
+}
+.modal-confirm .modal-footer {
+	border: none;
+	text-align: center;
+	border-radius: 5px;
+	font-size: 13px;
+	padding: 10px 15px 25px;
+}
+.modal-confirm .modal-footer a {
+	color: #999;
+}
+.modal-confirm .icon-box {
+	width: 80px;
+	height: 80px;
+	margin: 0 auto;
+	border-radius: 50%;
+	z-index: 9;
+	text-align: center;
+	border: 3px solid #f15e5e;
+}
+.modal-confirm .icon-box i {
+	color: #f15e5e;
+	font-size: 46px;
+	display: inline-block;
+	margin-top: 13px;
+}
+.modal-confirm .btn, .modal-confirm .btn:active {
+	color: #fff;
+	border-radius: 4px;
+	background: #60c7c1;
+	text-decoration: none;
+	transition: all 0.4s;
+	line-height: normal;
+	min-width: 120px;
+	border: none;
+	min-height: 40px;
+	border-radius: 3px;
+	margin: 0 5px;
+}
+.modal-confirm .btn-secondary {
+	background: #c1c1c1;
+}
+.modal-confirm .btn-secondary:hover, .modal-confirm .btn-secondary:focus {
+	background: #a8a8a8;
+}
+.modal-confirm .btn-danger {
+	background: #f15e5e;
+}
+.modal-confirm .btn-danger:hover, .modal-confirm .btn-danger:focus {
+	background: #ee3535;
+}
+.trigger-btn {
+	display: inline-block;
+	margin: 100px auto;
+}
+</style>
+{% endblock stylesheet %}
+
+{% block content %}
+  <table class="table table-striped meetinglist">
+    <thead>
+      <tr>
+        <th scope="col" colspan="6">
+          <div class="d-flex">
+            <div class="mr-auto p-2 bd-highlight"><h3>Meetings</h3></div>
+            <div class="p-2 bd-highlight">
+              <button id="newtask" class="btn not-reorder" data-toggle="modal" data-target="#edit_task_modal">
+                <!--Plus Icon-->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" width="20px" height="20px"><path d="M0 0h24v24H0z" fill="none"/><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+              </button>
+            </div>
+            <div class="p-2 bd-highlight">
+              <button class="btn" id="reorder-tg">
+                <!--Pencil Icon-->
+                <div class="not-reorder">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" width="20px" height="20px"><path d="M0 0h24v24H0z" fill="none"/><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                </div>
+                <div class="reorder">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="20px" height="20px"><path d="M0 0h24v24H0z" fill="none"/><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
+                </div>
+              </button>
+            </div>
+          </div>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for meeting in meetings.values() %}
+        <tr id="meeting-{{ meeting.id }}">
+          <td class="run-move">
+            <div class="reorder">
+              <i class="arr arr-up arr-disabled" id="up-{{meeting.id}}" data-index={{loop.index0}}></i>
+              <br>
+              <i class="arr arr-down arr-disabled" id="down-{{meeting.id}}" data-index={{loop.index0}}></i>
+            </div>
+            <div id="runtask-wrapper" class="not-reorder">
+              <a href="{{ url_for('run_task', id=meeting.id) }}">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 18" fill="#007bff" width="30px" height="30px"><path d="M3.1,0v18l14.1-9L3.1,0z"/></svg>
+              </a>
+            </div>
+          </td>
+          <td class="text overflow-hidden"><span>{{ meeting.name }}</span></td>
+          <td class="triggers">
+            {% for i in range(7) %}
+              <button type="button" class="btn daybutton{{' next' if meeting.triggers_by_day()[(i-1)%7][1] }}" id="button-{{meeting.id}}-{{meeting.triggers_by_day()[(i-1)%7][0]}}" data-toggle="popover" title="{{meeting.triggers_by_day()[(i-1)%7][0]}}" {{"disabled" if not meeting.triggers_by_day()[(i-1)%7][2]}}>
+                {{meeting.triggers_by_day()[(i-1)%7][0][0]}}
+              </button>
+              <div id="popover_content_wrapper" style="display: none">
+                {% for j in meeting.triggers_by_day()[(i-1)%7][2] %}
+                  <div class="trigger{{' next' if j[0]}}" id="trigger-{{meeting.id}}-{{meeting.triggers_by_day()[(i-1)%7][0]}}-{{loop.index0}}">{{j[1]}}</div>
+                {% endfor %}
+              </div>
+            {% endfor %}
+          <td class="toggle">
+            <div>
+              <input type="checkbox" class="checkbox" name="enabled" id="chk-{{meeting.id}}" data-id="{{meeting.id}}" onclick="change_state('{{ meeting.id }}')"{{' checked' if not meeting.enabled}}{{' disabled' if not meeting.triggers}}>
+              <label class="label" for="chk-{{meeting.id}}" id="lb-chk-{{meeting.id}}">
+                  <div class="ball"></div>
+              </label>
+            </div>
+          </td>
+          <td class="edit-delete">
+            <div class="not-reorder">
+              <button class="btn btn-primary btn-sm option-button" id="edit-{{ meeting.id }}" data-toggle="modal" data-target="#edit_task_modal">Edit</button>
+            </div>
+            <div class="reorder">
+              <button class="btn btn-danger btn-sm option-button" id="delete-{{ meeting.id }}" data-toggle="modal" data-target="#delete_task_modal" data-url="{{ url_for('delete_task', id=meeting.id) }}" data-name="{{meeting.name}}">Delete</button>
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{# <button class ="btn btn-secondary" id="test" onclick="testfunc()">test</button> #}
+{% endblock content %}
+
+{% block modal %}
+<div class="modal fade" id="edit_task_modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="edit_task_modal_title">Edit Meeting</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="edit_task_form" method="POST">
+          <div class="form-group">
+            <div class="input-group mb-3">
+              <div class="input-group-prepend">
+                <span class="input-group-text" style="width: 4rem">Name</span>
+              </div>
+              <input type="text" class="form-control" id="meeting_name" name="meeting_name">
+            </div>
+            <div class="input-group mb-3">
+              <div class="input-group-prepend">
+                <span class="input-group-text" style="width: 4rem">Link</span>
+              </div>
+              <input type="text" class="form-control" id="meeting_link" name="meeting_link" onClick="this.select()">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="triggers" class="col-form-label">Run Times: </label>
+            <div class="row">
+              <div class="col-4">
+                <div class="list-group" id="days-list-tab" role="tablist">
+                </div>
+                <a class="list-group-item list-group-item-action list-group-item-light" id="day-template" data-toggle="list" role="tab" style="display: none"></a>
+                <span class="badge badge-primary badge-pill" id="pill-template" style="float: right"></span>
+              </div>
+              <div class="col-4">
+                <div class="tab-content" id="day-content">
+                </div>
+                <div class="tab-pane fade actuallynofade" id="list-template" role="tabpanel">
+                  <div id="addtrigger">
+                    <div class="input-group mb-2">
+                      <input type="time" class="newtrigger">
+                      <div class="input-group-append">
+                        <button class="btn btn-outline-secondary" type="button" id="addtrigger-button">+</button>
+                      </div>
+                    </div>
+                  </div>
+                  <hr>
+                </div>
+                <div id="time-template" style="display: none">
+                  <div class="input-group mb-2">
+                    <input type="time">
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-danger" type="button" id="dt">−</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <div class="float-left" id="error">
+              <div id="error-box"></div>
+            </div>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button class="btn btn-primary" id="submit-form" type="submit">Save Changes</button>
+          </div>
+          <input type="hidden" name="data" id="data">
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="delete_task_modal" class="modal fade">
+	<div class="modal-dialog modal-confirm">
+		<div class="modal-content">
+			<div class="modal-header flex-column">
+        <h4 class="modal-title w-100">Delete Meeting</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span>&times;</span>
+        </button>
+      </div>
+			<div class="modal-body"><div id="delete-body"></div></div>
+			<div class="modal-footer justify-content-center">
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+				<button type="button" class="btn btn-danger" id="delete-button" data-dismiss="modal">Delete</button>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock modal %}
+
+{% block script %}
+<script>
+  const daynames = new Map([[6, "Sunday"], [0, "Monday"], [1, "Tuesday"], [2, "Wednesday"], [3, "Thursday"], [4, "Friday"], [5, "Saturday"]])
+  $.validator.addMethod('link', function(value) {
+    return /{{ linkre | safe }}/.test(value)
+  }, 'Invalid Zoom Link')
+
+
+  $(function(){
+
+    $('.daybutton:not(.disabled)').popover({
+      html : true,
+      trigger: 'focus',
+      placement: 'bottom',
+      content: function() {
+        return $(this).next('#popover_content_wrapper').html()
+      }
+    })
+    $('[id^=up]').click(function(){
+      if (!($(this).hasClass('arr-disabled'))) {
+        let index = $(this).attr('data-index')
+        id = $(this).attr('id').split('-')[1]
+        shift_task(id, index, -1)
+        refresh()
+      }
+    })
+    $('[id^=down]').click(function(){
+      if (!($(this).hasClass('arr-disabled'))) {
+        let index = $(this).attr('data-index')
+        id = $(this).attr('id').split('-')[1]
+        shift_task(id, index, 1)
+        refresh()
+      }
+    })
+    $('arr-disabled').off('click')
+    refresh()
+
+    init_display()
+
+    /*show modal*/
+    $('#edit_task_modal').on('show.bs.modal', function (event) {
+      button = $(event.relatedTarget)
+      modal = $(this)
+      data = new Object()
+      $.extend(true, data, button.data())
+      modal.find('#data').data(data)
+
+      modal.find('#edit_task_form').attr('action', data['url'])
+
+      /*modal.find('#edit_task_form').attr('action', '/'+id+'/edit_task')*/
+      modal.find('.modal-title').text('Edit Meeting: ' + data['name'])
+      modal.find('.modal-body #meeting_link').val(data['link'])
+      modal.find('.modal-body #meeting_name').val(data['name'])
+      //modal.find('#submit-form').attr('action', '/'+data['id']+'/edit_task')
+
+      function getlist(day) {
+        var list = $(document.createElement('div'))
+        for ([i, trigger] of data['triggers'][day[0]][2].entries()) {
+          timetemplate = modal.find("#time-template")
+          time = timetemplate.clone()
+          time.attr("id", "trigger-wrapper-"+i)
+          time.find("input").attr("value", trigger[2])
+          deletebutton = time.find("#dt")
+          deletebutton.attr("id", "dt-"+day[1]+"-"+i)
+          deletebutton.addClass('dt-'+day[1])
+          deletebutton.data('day', day)
+          time.removeAttr('style')
+          list.append(time)
+        }
+        return list
+      }
+
+      function updatepills() {
+        $('[id^=pill-]').filter( function() {
+          return !(parseInt($(this).text()) > 0)
+        }).css('display', 'none')
+        $('[id^=pill-]').filter( function() {
+          return (parseInt($(this).text()) > 0)
+        }).css('display', 'inline-block')
+      }
+
+      function refreshlist(day) {
+        modal.find('#pill-'+day[1]).text(data['triggers'][day[0]][2].length)
+        updatepills()
+        modal.find('#day-content #list-'+day[1]+' [id^=trigger-wrapper]').remove()
+        modal.find('#day-content #list-'+day[1]).append(getlist(day).children())
+      }
+
+      for (day of daynames) {
+        //day names
+        var daytemplate = modal.find("#day-template")
+        var day_item = daytemplate.clone()
+        day_item.attr("id", "list-"+day[1]+"-list")
+        day_item.attr("href", "#list-"+day[1])
+        day_item.css("display", "block")
+        day_item.text(day[1])
+
+        pill = modal.find("#pill-template").clone()
+        pill.attr('id', 'pill-'+day[1])
+        pill.text(data['triggers'][day[0]][2].length)
+        day_item.append(pill)
+
+        $("#days-list-tab").append(day_item)
+
+
+        list = modal.find("#list-template").clone()
+        list.attr("id", "list-"+day[1])
+        list.append(getlist(day).children())
+
+        addbutton = list.find('#addtrigger-button')
+        addbutton.attr('id', "addtrigger-button-"+day[1])
+        addbutton.data('day', day)
+        addbutton.data('triggers', data['triggers'][day[0]])
+        addbutton.on('click', function() {
+          day = $(this).data('day')
+          newtrigger = modal.find('#list-'+day[1]).find('.newtrigger')
+          if (!newtrigger.val()) {
+            console.log('finishing entering stuff pls')
+            newtrigger.focus()
+            return
+          }
+          data['triggers'][day[0]][2].push([null, null, newtrigger.val()])
+          data['triggers'][day[0]][2].sort(function (a, b) {
+            return new Date('1970/01/01 ' + a[2]) - new Date('1970/01/01 ' + b[2]);
+          });
+          modal.find('#list-'+day[1]).find('.newtrigger').val('')
+          refreshlist(day)
+          return
+        })
+
+        modal.find('#day-content').append(list)
+        modal.find('#list-'+day[1]).on('click', '.dt-'+day[1], function() {
+          day = $(this).data('day')
+          i = $('#list-'+day[1]).find('.dt-'+day[1]).index(this)
+          data['triggers'][day[0]][2].splice(i, 1)
+          refreshlist(day)
+          return
+        })
+      }
+      $('[id^=list-Sunday]').addClass('active show')
+      updatepills()
+    })
+    $('#reorder-tg').on('click', function() {
+      $(this).toggleClass('active')
+      $(this).toggleClass('btn-success')
+      if ($(this).hasClass('active')) {
+        $('.reorder').show()
+        $('.not-reorder').hide()
+      } else {
+        $('.reorder').hide()
+        $('.not-reorder').show()
+        location.reload(true)
+      }
+    })
+    $('#edit_task_modal').on('hidden.bs.modal', function() {
+      var modal = $(this)
+      modal.find('#day-content').html('')
+      modal.find("#days-list-tab").html('')
+    })
+    $('#edit_task_form').submit( function(event) {
+      data = $(this).find('#data').data()
+      console.log(data['triggers'])
+      for (day of data['triggers']) {
+        day[2].forEach( function(trigger, i) {
+          console.log(i, trigger[2])
+          console.log($('#list-'+day[0]+' #trigger-wrapper-'+i+' input').val())
+          trigger[2] = $('#list-'+day[0]+' #trigger-wrapper-'+i+' input').val()
+          console.log(trigger)
+        })
+      }
+      $(this).find('#data').attr('value', JSON.stringify(data))
+      return false
+      event.preventDefault();
+    })
+    $('#edit_task_form').validate({
+      rules: {
+        meeting_name: 'required',
+        meeting_link: 'link'
+      },
+      errorElement: 'div',
+      errorLabelContainer: "#error-box",
+      messages: {
+        meeting_name: 'Please enter a meeting name.',
+        meeting_link: 'Please enter a valid Zoom link.'
+      },
+      focusInvalid: false,
+      invalidHandler: function() {
+        $(this).find(":input.error:first").focus();
+      },
+      showErrors: function(errorMap, errorList) {
+        this.defaultShowErrors()
+        if ($('#meeting_name-error:visible').length) {
+          $('#meeting_link-error').hide()
+        } else {
+          $('#meeting_link-error').show()
+        }
+      },
+      submitHandler: function(form) {
+        form.submit()
+      }
+    })
+    // $('[id^=delete]').on('click', function() {
+    //   id = $(this).attr('id').split("-")[1]
+    //   $.post($(this).data('url'))
+    //   $('#meeting-'+id).remove()
+    //   meetings = $('[id^=meeting-]')
+    //   console.log(meetings)
+    //   for (var i = 0; i <= meetings.length; i++) {
+    //     meetings.eq(i).find('.arr').attr('data-index', i+1)
+    //     console.log(meetings.eq(i), meetings.eq(i).find('.arr').attr('data-index'))
+    //   }
+    //   refresh()
+    // })
+    $('#delete_task_modal').on('show.bs.modal', function (event) {
+      button = $(event.relatedTarget)
+      modal = $(this)
+
+      modal.find('#delete-body').html(`Are you sure you want to delete ${button.data('name')}?`)
+      modal.find('#delete-button').on('click', function(){
+        id = button.attr('id').split("-")[1]
+        console.log(button)
+        $.post(button.data('url'))
+        $('#meeting-'+id).remove()
+        meetings = $('[id^=meeting-]')
+        console.log(meetings)
+        for (var i = 0; i < meetings.length; i++) {
+          meetings.eq(i).find('.arr').attr('data-index', i)
+          console.log(meetings.eq(i), meetings.eq(i).find('.arr').attr('data-index'))
+        }
+        refresh()
+      })
+    })
+  })
+
+  function day_button_display(id) {
+    data = $('#meeting-'+id).find('#edit-'+id).data()
+    buttons =  $('[id^=button-'+id+'-]')
+    enabled = data['enabled']
+    console.log(data)
+    for (day of daynames) {
+      if (data.triggers[day[0]][2].length) {
+        $('[id^=button-'+id+'-'+day[1]+']').removeAttr('disabled')
+      } else {
+        $('[id^=button-'+id+'-'+day[1]+']').attr('disabled','')
+      }
+      if (data.triggers[day[0]][1] && data.enabled) {
+        $('[id^=button-'+id+'-'+day[1]+']').addClass('next')
+      } else {
+        $('[id^=button-'+id+'-'+day[1]+']').removeClass('next')
+      }
+      for (var i = 0; i < data.triggers[day[0]][2].length; i++) {
+        if (data.triggers[day[0]][2][i][0] && data.enabled) {
+          $('[id^=trigger-'+id+'-'+day[1]+'-'+i+']').addClass('next')
+        } else {
+          $('[id^=trigger-'+id+'-'+day[1]+'-'+i+']').removeClass('next')
+        }
+      }
+    }
+{# 
+    for (var i = 0; i < buttons.length; i++) {
+      console.log(buttons.eq(i))
+      if (enabled) {
+        buttons.eq(i).removeAttr('disabled')
+      } else {
+        buttons.eq(i).attr('disabled','')
+      }
+    } #}
+  }
+
+  function htmlDecode(input){
+    var e = document.createElement('textarea')
+    e.innerHTML = input
+    // handle case of empty input
+    return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue
+  }
+
+  function post_to(link, id){
+    $.post(`/${id}/${link}`)
+    console.log(`/${id}/${link}`)
+    return false
+  }
+
+  function change_state(id) {
+    enabled = $('#meeting-'+id).find('#edit-'+id).data('enabled')
+    $('#meeting-'+id).find('#edit-'+id).data('enabled', !enabled)
+    console.log(enabled)
+    post_to('change_state', id)
+    day_button_display(id)
+  }
+
+  function copylink(link) {
+    const el = document.createElement('textarea')
+    el.value = link
+    document.body.appendChild(el)
+    el.select()
+    document.execCommand('copy')
+    document.body.removeChild(el)
+  }
+
+  function shift_task(id, index, direction) {
+    $.post(`/${id}/shift_task/${direction}`)
+    other = parseInt(index)+parseInt(direction)
+    let replacetr = $("tr").has("i[data-index="+ other +"]")
+    let replace = $("i[data-index="+ other +"]")
+    let movetr = $("tr").has("i[data-index="+ index +"]")
+    let move = $("i[data-index="+ index +"]")
+    if (direction > 0) {
+      movetr.insertAfter(replacetr)
+    } else if (direction < 0) {
+      movetr.insertBefore(replacetr)
+    }
+    replace.attr('data-index', index)
+    move.attr('data-index', other)
+  }
+
+  function refresh() {
+    length = $('[id^=meeting-]').length
+    _top = $('[id^="up"][data-index=0]')
+    nottop = $('[id^="up"]:not([data-index=0])')
+    bottom = $('[id^="down"][data-index='+(length-1)+']')
+    notbottom = $('[id^="down"]:not([data-index='+(length-1)+'])')
+    _top.addClass('arr-disabled')
+    bottom.addClass('arr-disabled')
+    nottop.removeClass('arr-disabled')
+    notbottom.removeClass('arr-disabled')
+  }
+
+  function init_display() {
+    emptytriggers = [
+      ['Monday', false, []],
+      ['Tuesday', false, []],
+      ['Wednesday', false, []],
+      ['Thursday', false, []],
+      ['Friday', false, []],
+      ['Saturday', false, []],
+      ['Sunday', false, []],
+    ]
+    $('#newtask').data({url: '{{ url_for("new_meeting") }}', id: "NEW", name: "", link: "", triggers: emptytriggers})
+    var meetingArray = new Array()
+    var meeting = {}
+    {% for meeting in meetings.values() %}
+      meeting = {url: '{{ url_for("edit_task", id=meeting.id) }}', id: '{{meeting.id}}', name: '{{meeting.name}}', link: htmlDecode('{{meeting.browser_link()}}'), enabled: {{'true' if meeting.enabled else 'false'}}, triggers: {{meeting.triggers_by_day() | tojson}}}
+      meetingArray.push(meeting)
+    {% endfor %}
+    for (var i = 0; i < meetingArray.length; i++){
+      $('#edit-'+meetingArray[i].id).data(meetingArray[i])
+      day_button_display(meetingArray[i].id)
+    }
+  }
+
+  function testfunc() {
+
+  }
+</script>
+{% endblock script %}

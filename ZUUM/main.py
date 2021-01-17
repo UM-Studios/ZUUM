@@ -93,7 +93,7 @@ def start_scheduler():
                 pass
         else:
             # hi colin start zuum scheduler
-            # call(['sh', '-c', 'pw="$(osascript -e \'Tell application "System Events" to display dialog "Password:" default answer "" with hidden answer\' -e \'text returned of result\' 2>/dev/null)" && echo "$pw" | sudo -S cp com.ZUUM.scheduler.plist ~/Library/LaunchAgents'])
+            call(['sh', '-c', 'pw="$(osascript -e \'Tell application "System Events" to display dialog "Password:" default answer "" with hidden answer\' -e \'text returned of result\' 2>/dev/null)" && echo "$pw" | sudo -S cp com.ZUUM.scheduler.plist ~/Library/LaunchAgents'])
             # call(['launchctl', 'start', 'com.ZUUM.scheduler'])
             # call(['osascript', '-e', 'tell application (path to frontmost application as text) to display dialog "'+os.getcwd()+'" buttons {"OK"} with icon stop'])
             Popen(["/applications/zuum.app/contents/macos/zuumscheduler"])
