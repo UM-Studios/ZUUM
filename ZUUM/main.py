@@ -15,7 +15,7 @@ from appdata import appdata
 
 from apscheduler.triggers.combining import OrTrigger
 
-from subprocess import Popen, call
+from subprocess import Popen, run, call
 # import logging
 
 # logging.basicConfig(level=logging.DEBUG)
@@ -93,7 +93,11 @@ def start_scheduler():
                 pass
         else:
             # hi colin start zuum scheduler
-            call(['sh', 'addstartup.sh'])
+            # call(['sh', '-c', 'pw="$(osascript -e \'Tell application "System Events" to display dialog "Password:" default answer "" with hidden answer\' -e \'text returned of result\' 2>/dev/null)" && echo "$pw" | sudo -S cp com.ZUUM.scheduler.plist ~/Library/LaunchAgents'])
+            # call(['launchctl', 'start', 'com.ZUUM.scheduler'])
+            # call(['osascript', '-e', 'tell application (path to frontmost application as text) to display dialog "'+os.getcwd()+'" buttons {"OK"} with icon stop'])
+            Popen(["/applications/zuum.app/contents/macos/zuumscheduler"])
+            # Popen(["ZuumScheduler"])
             pass
         for i in range(3):
             try:
