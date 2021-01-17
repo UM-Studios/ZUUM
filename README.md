@@ -8,14 +8,18 @@ What started out as a simple Zoom meeting task scheduler extension has become ZU
 1. Modify or delete meetings and run times.
 
 # Installation
+
 ## Windows
-Simply download the installer and run it. ZUUM requires administrator privileges to access task scheduler, but the installer will create an elevated shortcut on your desktop so you don't have to provide permission every time you launch. 
+Simply download the ZUUM-1.0.0-setup-win.exe and run it. 
 
 ## MacOS
-Download the dmg and open it. Drag the ZUUM application to your applications folder and run it. You are then free to unmount and delete the dmg.
+Download ZUUM-Installer-1.0.0.dmg and open it. Follow the steps in HowToInstall.txt for further instructions
 
 # Compatibility
-ZUUM is compatible with both Windows and MacOS (On 10.15 Catalina)! A Linux version may be in the workings, so stay tuned! We will also be adding support for older Macs in the next update.
+ZUUM works for both Windows and MacOS (on 10.15 Catalina and 11.0.0 Big Sur)! A Linux version may be in the works, so stay tuned for that. We will also be adding support for older Macs in a future update.
+
+# Issues
+If you find any issues, please let us know! Github has a special [issues page](https://github.com/UM-Studios/ZUUM/issues) just for this, so if you find an issue, head over there and create a new issue. We'll be addressing these as soon as possible!
 
 # Download
 Check the releases section on the right -->
