@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+
+{% block stylesheet %}
+<style>
+
+</style>
+{% endblock stylesheet %}
+
+{% block content %}
+    <h2>Couldn't connect to scheduler.</h2>
+    <div class="pb-2">Looks like Zuum Scheduler isn't running.</div>
+    <form method="POST" action="{{ url_for('start_scheduler') }}">
+        <input type="submit" class="btn btn-success" value="Start Scheduler" name="start">
+    </form>
+{% endblock content %}
